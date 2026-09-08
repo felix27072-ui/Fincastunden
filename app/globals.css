@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* la Finca Designtokens — aus finca-stundenzettel-v3.jsx übernommen */
+  --color-carbon: #1c1917;
+  --color-surface: #262220;
+  --color-line: #3b3532;
+  --color-crema: #f6f1e8;
+  --color-muted: #a19a90;
+  --color-naranja: #e07c24;
+  --color-naranja-dark: #b5561f;
+  --color-verde: #8aa46b;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-carbon);
+  color: var(--color-crema);
+  font-family: var(--font-sans);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.week-cell:active {
+  background: rgba(224, 124, 36, 0.18);
+}
+
+.week-cell-times {
+  display: none;
+}
+@media (min-width: 480px) {
+  .week-cell-times {
+    display: block;
+  }
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-naranja);
+  outline-offset: 2px;
+}
