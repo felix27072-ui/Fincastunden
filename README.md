@@ -9,11 +9,12 @@ Design-/Logikvorlage.
 
 Gebaut: Projekt-Setup, SQL-Migration (Schema, berechnete Stunden, RLS,
 Audit-Trigger), Magic-Link-Login, Wochenplan, Meine Schichten, Auszahlen mit
-Unterschrift (Supabase Storage) und Quittung.
+Unterschrift (Supabase Storage) und Quittung, Abrechnung (Summen je
+Mitarbeiter, CSV-Export, Auszahlungsliste, Änderungsprotokoll).
 
-Noch offen (nächste Schritte): Abrechnung/CSV-Export für Chef und
-Steuerberatung, Mitarbeiter-Verwaltung für Joe (Supabase Auth Admin API,
-service role).
+Noch offen (nächster Schritt): Mitarbeiter-Verwaltung für Joe (Supabase Auth
+Admin API, service role) — bis dahin Mitarbeiter wie unten beschrieben über
+Supabase Studio anlegen.
 
 ## Setup
 
@@ -22,9 +23,9 @@ service role).
    *Project Settings → API* füllen (`NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 3. Migrationen einspielen — entweder im Supabase Dashboard unter *SQL Editor*
-   den Inhalt von `supabase/migrations/0001_init.sql` und danach
-   `0002_payouts.sql` ausführen, oder mit der Supabase CLI: `supabase link`
-   und `supabase db push`.
+   die Dateien aus `supabase/migrations/` der Reihe nach ausführen
+   (`0001_init.sql`, `0002_payouts.sql`, `0003_audit_log_view.sql`), oder mit
+   der Supabase CLI: `supabase link` und `supabase db push`.
 4. In Supabase unter *Authentication → Providers* sicherstellen, dass "Email
    OTP" (Magic Link) aktiv ist, und unter *Authentication → URL Configuration*
    die Redirect-URL `<deine-domain>/auth/callback` eintragen (für lokale
@@ -38,8 +39,9 @@ service role).
    values ('<user-id-aus-auth.users>', 'Joe', 'joe@example.com', 'chef', 0);
    ```
 
-   Weitere Mitarbeiter kann Joe später über die App anlegen, sobald die
-   Mitarbeiter-Verwaltung gebaut ist; bis dahin genauso über Supabase Studio.
+   Weitere Mitarbeiter genauso über Supabase Studio anlegen, bis Joe das
+   selbst in der App erledigen kann (Rolle `mitarbeiter`, `steuer` für die
+   Steuerberatung).
 6. `npm install`, dann `npm run dev` und `http://localhost:3000` öffnen.
 
 ## Entwicklung
@@ -53,16 +55,18 @@ npm run lint    # ESLint
 ## Struktur
 
 ```
-app/(app)/          Gemeinsames Layout (TopBar, Tabs) für alle angemeldeten Seiten
-app/(app)/woche/     Wochenplan (Startseite) — Grid, Tages- und Schichtansicht
-app/(app)/meine/     Meine Schichten — offener Betrag, eigene Liste, Auszahlen
-app/login/           Magic-Link-Anmeldung
-app/auth/            OAuth-Callback, Fehlerseiten, Abmeldung ohne Zugang
-components/payout/   Auszahlen: Schichtauswahl, Unterschrift-Canvas, Quittung
-lib/supabase/        Browser-/Server-/Proxy-Clients
-lib/format.ts         Formatierung & Datumslogik (Dezimalkomma, KW, Monat)
-lib/database.types.ts Handgepflegte Supabase-Typen passend zur Migration
-supabase/migrations/  SQL: Schema, RLS, Audit-Trigger, Auszahlen-Funktion
+app/(app)/           Gemeinsames Layout (TopBar, Tabs) für alle angemeldeten Seiten
+app/(app)/woche/      Wochenplan (Startseite) — Grid, Tages- und Schichtansicht
+app/(app)/meine/      Meine Schichten — offener Betrag, eigene Liste, Auszahlen
+app/(app)/abrechnung/ Abrechnung (chef/steuer) — Summen, CSV-Export, Protokoll
+app/login/            Magic-Link-Anmeldung
+app/auth/             OAuth-Callback, Fehlerseiten, Abmeldung ohne Zugang
+components/payout/    Auszahlen: Schichtauswahl, Unterschrift-Canvas, Quittung
+lib/supabase/         Browser-/Server-/Proxy-Clients
+lib/format.ts          Formatierung & Datumslogik (Dezimalkomma, KW, Monat)
+lib/audit.ts            Änderungsprotokoll: Titel/Detailtext je Eintrag
+lib/database.types.ts  Handgepflegte Supabase-Typen passend zur Migration
+supabase/migrations/   SQL: Schema, RLS, Audit-Trigger, Auszahlen-Funktion, Protokoll-View
 ```
 
 `proxy.ts` (Next.js 16 hat `middleware.ts` in `proxy.ts` umbenannt) hält die

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEmployee } from "@/lib/auth";
-import { addDays, isoWeek, monthKey, monthLabel, mondayOf, today, weeksOfMonth, dShort } from "@/lib/format";
+import { addDays, isoWeek, monthLabel, mondayOf, today, weeksOfMonth, dShort } from "@/lib/format";
+import { getAvailableMonths } from "@/lib/months";
 import MonthSelect from "@/components/MonthSelect";
 import WeekGrid from "./WeekGrid";
 import type { ShiftDetail, StaffMember } from "./types";
@@ -17,8 +18,8 @@ export default async function WochePage({
 
   const supabase = await createClient();
 
-  const [{ data: dateRows }, { data: staffRows }] = await Promise.all([
-    supabase.from("shifts").select("work_date").order("work_date", { ascending: false }),
+  const [months, { data: staffRows }] = await Promise.all([
+    getAvailableMonths(supabase),
     supabase
       .from("employees_view")
       .select("id, name, role, active, rate_cents")
@@ -26,10 +27,6 @@ export default async function WochePage({
       .eq("active", true)
       .order("name"),
   ]);
-
-  const monthSet = new Set((dateRows ?? []).map((r) => monthKey(r.work_date)));
-  monthSet.add(monthKey(today()));
-  const months = [...monthSet].sort().reverse();
 
   const mk = month && months.includes(month) ? month : months[0];
   const weeks = weeksOfMonth(mk);

@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import { dLabel, de, eur } from "@/lib/format";
 import { getPayoutShifts, getSignatureUrl, type PayoutShiftLine } from "@/app/(app)/actions";
 import type { PayoutRow } from "@/lib/database.types";
+import { download } from "@/lib/download";
 
 async function logoAsDataUrl(): Promise<string> {
   const res = await fetch("/logo.png");
@@ -17,15 +18,6 @@ async function logoAsDataUrl(): Promise<string> {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-}
-
-function download(name: string, content: string, type: string) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default function ReceiptView({

@@ -158,6 +158,21 @@ export interface Database {
         };
         Relationships: [];
       };
+      audit_log_view: {
+        Row: {
+          id: number;
+          entity: AuditEntity;
+          entity_id: string;
+          action: AuditAction;
+          before: Record<string, unknown> | null;
+          after: Record<string, unknown> | null;
+          actor: string | null;
+          actor_name: string | null;
+          at: string;
+          subject_name: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       shift_minutes: {

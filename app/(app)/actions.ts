@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { PayoutRow } from "@/lib/database.types";
+import type { AuditLogEntry } from "@/lib/audit";
 
 export async function signOut() {
   const supabase = await createClient();
@@ -47,6 +48,7 @@ export async function createPayout(input: CreatePayoutInput): Promise<PayoutRow>
 
   revalidatePath("/woche");
   revalidatePath("/meine");
+  revalidatePath("/abrechnung");
 
   return data;
 }
@@ -78,4 +80,29 @@ export async function getSignatureUrl(path: string): Promise<string | null> {
     .createSignedUrl(path, 60 * 10);
   if (error) return null;
   return data.signedUrl;
+}
+
+export async function getOpenShiftsForEmployee(
+  employeeId: string
+): Promise<PayoutShiftLine[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("shift_details")
+    .select("id, work_date, start_time, end_time, hours, amount_cents")
+    .eq("employee_id", employeeId)
+    .eq("paid", false)
+    .order("work_date", { ascending: false });
+  if (error || !data) return [];
+  return data;
+}
+
+export async function getAuditLog(limit = 300): Promise<AuditLogEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("audit_log_view")
+    .select("id, entity, action, before, after, actor_name, at, subject_name")
+    .order("at", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data;
 }

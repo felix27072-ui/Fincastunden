@@ -55,11 +55,15 @@ export function isoWeek(iso: string): number {
     Math.round(((dt.getTime() - first.getTime()) / 86400000 - 3 + ((first.getDay() + 6) % 7)) / 7)
   );
 }
-export function weeksOfMonth(mk: string): string[] {
+export function monthRange(mk: string): [first: string, last: string] {
   const first = mk + "-01";
   const last = new Date(asDate(first).getFullYear(), asDate(first).getMonth() + 1, 0)
     .toISOString()
     .slice(0, 10);
+  return [first, last];
+}
+export function weeksOfMonth(mk: string): string[] {
+  const [first, last] = monthRange(mk);
   const out: string[] = [];
   let m = mondayOf(first);
   while (m <= last) {
