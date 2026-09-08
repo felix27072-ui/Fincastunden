@@ -6,6 +6,17 @@ export type Role = "mitarbeiter" | "chef" | "steuer";
 export type AuditEntity = "shift" | "payout" | "employee";
 export type AuditAction = "insert" | "update" | "delete";
 
+export type PayoutRow = {
+  id: string;
+  employee_id: string;
+  paid_on: string;
+  total_cents: number;
+  minutes: number;
+  signature_path: string | null;
+  confirmed_by: string;
+  created_at: string;
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -75,16 +86,7 @@ export interface Database {
         Relationships: [];
       };
       payouts: {
-        Row: {
-          id: string;
-          employee_id: string;
-          paid_on: string;
-          total_cents: number;
-          minutes: number;
-          signature_path: string | null;
-          confirmed_by: string;
-          created_at: string;
-        };
+        Row: PayoutRow;
         Insert: {
           id?: string;
           employee_id: string;
@@ -165,6 +167,15 @@ export interface Database {
       shift_amount_cents: {
         Args: { p_start: string; p_end: string; p_rate_cents: number };
         Returns: number;
+      };
+      create_payout: {
+        Args: {
+          p_id: string;
+          p_employee_id: string;
+          p_shift_ids: string[];
+          p_signature_path: string | null;
+        };
+        Returns: PayoutRow;
       };
     };
   };

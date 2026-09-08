@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { signOut } from "@/app/woche/actions";
+import { signOut } from "@/app/(app)/actions";
 import type { Role } from "@/lib/database.types";
 
 const ROLE_LABEL: Record<Role, string> = {

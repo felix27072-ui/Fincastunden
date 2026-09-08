@@ -8,11 +8,12 @@ Design-/Logikvorlage.
 ## Stand
 
 Gebaut: Projekt-Setup, SQL-Migration (Schema, berechnete Stunden, RLS,
-Audit-Trigger), Magic-Link-Login, Wochenplan.
+Audit-Trigger), Magic-Link-Login, Wochenplan, Meine Schichten, Auszahlen mit
+Unterschrift (Supabase Storage) und Quittung.
 
-Noch offen (nächste Schritte): "Meine Schichten", Auszahlen mit Unterschrift
-(Supabase Storage), Abrechnung/CSV-Export, Mitarbeiter-Verwaltung für Joe
-(Supabase Auth Admin API, service role).
+Noch offen (nächste Schritte): Abrechnung/CSV-Export für Chef und
+Steuerberatung, Mitarbeiter-Verwaltung für Joe (Supabase Auth Admin API,
+service role).
 
 ## Setup
 
@@ -20,9 +21,10 @@ Noch offen (nächste Schritte): "Meine Schichten", Auszahlen mit Unterschrift
 2. `.env.local.example` nach `.env.local` kopieren und mit den Werten aus
    *Project Settings → API* füllen (`NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
-3. Migration einspielen — entweder im Supabase Dashboard unter *SQL Editor*
-   den Inhalt von `supabase/migrations/0001_init.sql` ausführen, oder mit der
-   Supabase CLI: `supabase link` und `supabase db push`.
+3. Migrationen einspielen — entweder im Supabase Dashboard unter *SQL Editor*
+   den Inhalt von `supabase/migrations/0001_init.sql` und danach
+   `0002_payouts.sql` ausführen, oder mit der Supabase CLI: `supabase link`
+   und `supabase db push`.
 4. In Supabase unter *Authentication → Providers* sicherstellen, dass "Email
    OTP" (Magic Link) aktiv ist, und unter *Authentication → URL Configuration*
    die Redirect-URL `<deine-domain>/auth/callback` eintragen (für lokale
@@ -51,13 +53,16 @@ npm run lint    # ESLint
 ## Struktur
 
 ```
-app/woche/        Wochenplan (Startseite) — Grid, Tages- und Schichtansicht
-app/login/         Magic-Link-Anmeldung
-app/auth/           OAuth-Callback, Fehlerseiten, Abmeldung ohne Zugang
-lib/supabase/       Browser-/Server-/Proxy-Clients
-lib/format.ts        Formatierung & Datumslogik (Dezimalkomma, KW, Monat)
+app/(app)/          Gemeinsames Layout (TopBar, Tabs) für alle angemeldeten Seiten
+app/(app)/woche/     Wochenplan (Startseite) — Grid, Tages- und Schichtansicht
+app/(app)/meine/     Meine Schichten — offener Betrag, eigene Liste, Auszahlen
+app/login/           Magic-Link-Anmeldung
+app/auth/            OAuth-Callback, Fehlerseiten, Abmeldung ohne Zugang
+components/payout/   Auszahlen: Schichtauswahl, Unterschrift-Canvas, Quittung
+lib/supabase/        Browser-/Server-/Proxy-Clients
+lib/format.ts         Formatierung & Datumslogik (Dezimalkomma, KW, Monat)
 lib/database.types.ts Handgepflegte Supabase-Typen passend zur Migration
-supabase/migrations/  SQL: Schema, RLS, Audit-Trigger
+supabase/migrations/  SQL: Schema, RLS, Audit-Trigger, Auszahlen-Funktion
 ```
 
 `proxy.ts` (Next.js 16 hat `middleware.ts` in `proxy.ts` umbenannt) hält die

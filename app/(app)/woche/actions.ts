@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type ShiftInput = {
@@ -44,6 +43,7 @@ export async function saveShift(input: ShiftInput) {
   }
 
   revalidatePath("/woche");
+  revalidatePath("/meine");
 }
 
 export async function deleteShift(id: string) {
@@ -51,6 +51,7 @@ export async function deleteShift(id: string) {
   const { error } = await supabase.from("shifts").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/woche");
+  revalidatePath("/meine");
 }
 
 export type HistoryEntry = { at: string; action: string; who: string };
@@ -76,10 +77,4 @@ export async function getShiftHistory(shiftId: string): Promise<HistoryEntry[]> 
     action: ACTION_LABEL[row.action] ?? row.action,
     who: (row.actor as { name: string } | null)?.name ?? "—",
   }));
-}
-
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/login");
 }
