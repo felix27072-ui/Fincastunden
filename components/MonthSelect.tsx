@@ -1,16 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { monthLabel } from "@/lib/format";
 
 export default function MonthSelect({
   months,
   value,
-  monthLabel,
   basePath = "/woche",
 }: {
   months: string[];
   value: string;
-  monthLabel: (mk: string) => string;
   basePath?: string;
 }) {
   const router = useRouter();

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEmployee } from "@/lib/auth";
-import { addDays, isoWeek, monthLabel, mondayOf, today, weeksOfMonth, dShort } from "@/lib/format";
+import { addDays, isoWeek, mondayOf, today, weeksOfMonth, dShort } from "@/lib/format";
 import { getAvailableMonths } from "@/lib/months";
 import MonthSelect from "@/components/MonthSelect";
 import WeekGrid from "./WeekGrid";
@@ -49,7 +49,7 @@ export default async function WochePage({
 
   return (
     <>
-      <MonthSelect months={months} value={mk} monthLabel={monthLabel} />
+      <MonthSelect months={months} value={mk} />
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 pt-2.5">
         {weeks.map((m) => (

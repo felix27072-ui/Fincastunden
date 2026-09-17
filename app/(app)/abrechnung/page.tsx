@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEmployee } from "@/lib/auth";
 import { getAvailableMonths } from "@/lib/months";
-import { monthLabel, monthRange } from "@/lib/format";
+import { monthRange } from "@/lib/format";
 import MonthSelect from "@/components/MonthSelect";
 import AbrechnungClient from "./AbrechnungClient";
 import type { ShiftDetail } from "@/app/(app)/woche/types";
@@ -52,7 +52,7 @@ export default async function AbrechnungPage({
 
   return (
     <>
-      <MonthSelect months={months} value={mk} monthLabel={monthLabel} basePath="/abrechnung" />
+      <MonthSelect months={months} value={mk} basePath="/abrechnung" />
       <AbrechnungClient
         canPayout={me.role === "chef"}
         mk={mk}
