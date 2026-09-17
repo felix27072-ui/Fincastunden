@@ -22,6 +22,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ]}
         />
         {children}
+        <a href="/datenschutz" className="mt-8 block text-center text-[11px] text-muted">
+          Datenschutz
+        </a>
       </div>
     </div>
   );

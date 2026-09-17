@@ -27,6 +27,9 @@ export default async function LoginPage({
           </div>
         )}
         <LoginForm next={next ?? "/woche"} />
+        <a href="/datenschutz" className="mt-6 block text-center text-[11px] text-muted">
+          Datenschutz
+        </a>
       </div>
     </div>
   );

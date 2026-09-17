@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "Digitaler Stundenzettel für Restaurant la Finca, Freiburg.",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/logo.png", apple: "/logo.png" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "la Finca" },
 };
 
 export const viewport: Viewport = {
