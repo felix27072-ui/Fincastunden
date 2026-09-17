@@ -44,6 +44,21 @@ Supabase Studio anlegen.
    Steuerberatung).
 6. `npm install`, dann `npm run dev` und `http://localhost:3000` öffnen.
 
+## Deployment (Vercel)
+
+Kein lokaler Rechner nötig — geht komplett über die Vercel-Weboberfläche:
+
+1. Auf [vercel.com](https://vercel.com) mit demselben GitHub-Account einloggen,
+   unter dem das Repo liegt, und das Repo importieren.
+2. Beim Import unter **Environment Variables** dieselben zwei Werte wie in
+   `.env.local` eintragen (`NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`), Umgebung „Production and Preview".
+3. Deployen. Danach die zugewiesene Adresse (`https://<projekt>.vercel.app`)
+   in Supabase unter *Authentication → URL Configuration* als zusätzliche
+   Redirect-URL eintragen: `https://<projekt>.vercel.app/auth/callback`.
+4. Jeder Push auf den verbundenen Branch löst automatisch ein neues
+   Deployment aus.
+
 ## Entwicklung
 
 ```bash
