@@ -5,6 +5,7 @@ import Field, { inputClass } from "@/components/ui/Field";
 import Button from "@/components/ui/Button";
 import { eur } from "@/lib/format";
 import { createEmployee, setEmployeeActive, type EmployeeListItem } from "./actions";
+import EditEmployeeSheet from "./EditEmployeeSheet";
 import type { Role } from "@/lib/database.types";
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -22,6 +23,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<EmployeeListItem | null>(null);
 
   function submit() {
     setError("");
@@ -114,15 +116,19 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
             key={emp.id}
             className="flex items-center justify-between gap-2 border-b border-line py-2.5"
           >
-            <div className="min-w-0">
+            <button
+              type="button"
+              onClick={() => setEditing(emp)}
+              className="min-w-0 flex-1 text-left"
+            >
               <div className={`text-[15px] ${emp.active ? "" : "text-muted line-through"}`}>
                 {emp.name}
               </div>
               <div className="truncate text-xs text-muted">
                 {emp.email} · {ROLE_LABEL[emp.role]}
-                {emp.role === "mitarbeiter" && ` · ${eur(emp.rate_cents / 100)}/h`}
+                {emp.role !== "steuer" && ` · ${eur(emp.rate_cents / 100)}/h`}
               </div>
-            </div>
+            </button>
             <Button
               variant="outline"
               onClick={() => toggleActive(emp)}
@@ -134,6 +140,14 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
           </div>
         ))}
       </div>
+
+      {editing && (
+        <EditEmployeeSheet
+          employee={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => setEditing(null)}
+        />
+      )}
     </>
   );
 }

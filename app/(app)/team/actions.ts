@@ -88,3 +88,53 @@ export async function setEmployeeActive(id: string, active: boolean) {
   revalidatePath("/team");
   revalidatePath("/woche");
 }
+
+export type UpdateEmployeeInput = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  rateEuros: number;
+};
+
+export async function updateEmployee(input: UpdateEmployeeInput) {
+  const supabase = await requireChef();
+  const email = input.email.trim();
+
+  const { data: current } = await supabase
+    .from("employees")
+    .select("email")
+    .eq("id", input.id)
+    .maybeSingle();
+
+  if (current && current.email !== email) {
+    const admin = createAdminClient();
+    const { error: authError } = await admin.auth.admin.updateUserById(input.id, {
+      email,
+      email_confirm: true,
+    });
+    if (authError) {
+      throw new Error(
+        authError.message.includes("already been registered")
+          ? "Diese E-Mail-Adresse wird schon von einem anderen Konto verwendet."
+          : authError.message
+      );
+    }
+  }
+
+  const { error } = await supabase
+    .from("employees")
+    .update({
+      name: input.name.trim(),
+      email,
+      role: input.role,
+      rate_cents: Math.round(input.rateEuros * 100),
+    })
+    .eq("id", input.id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/team");
+  revalidatePath("/woche");
+  revalidatePath("/abrechnung");
+  revalidatePath("/meine");
+}
