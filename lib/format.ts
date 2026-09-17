@@ -33,6 +33,11 @@ export const dLabel = (iso: string) =>
 export const dShort = (iso: string) =>
   asDate(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
 export const monthKey = (iso: string) => iso.slice(0, 7);
+export function addMonths(mk: string, n: number): string {
+  const [y, m] = mk.split("-").map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 export const monthLabel = (mk: string) =>
   new Date(mk + "-01T12:00:00").toLocaleDateString("de-DE", { month: "long", year: "numeric" });
 

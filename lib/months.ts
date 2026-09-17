@@ -1,8 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-import { monthKey, today } from "@/lib/format";
+import { addMonths, monthKey, today } from "@/lib/format";
 
-/** Alle Monate mit mindestens einer Schicht, plus immer der aktuelle Monat. */
+/**
+ * Alle Monate mit mindestens einer Schicht, plus immer der aktuelle und der
+ * nächste Monat — auch ohne Schichten wählbar, damit sich z. B. schon jetzt
+ * eine Schicht für Anfang nächsten Monats eintragen lässt.
+ */
 export async function getAvailableMonths(
   supabase: SupabaseClient<Database>
 ): Promise<string[]> {
@@ -13,5 +17,6 @@ export async function getAvailableMonths(
 
   const monthSet = new Set((data ?? []).map((r) => monthKey(r.work_date)));
   monthSet.add(monthKey(today()));
+  monthSet.add(addMonths(monthKey(today()), 1));
   return [...monthSet].sort().reverse();
 }
