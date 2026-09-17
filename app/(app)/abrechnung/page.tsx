@@ -25,7 +25,11 @@ export default async function AbrechnungPage({
 
   const [{ data: staffRows }, { data: shiftRows }, { data: payoutRows }, { data: openRows }] =
     await Promise.all([
-      supabase.from("employees_view").select("id, name, active").eq("role", "mitarbeiter").order("name"),
+      supabase
+        .from("employees_view")
+        .select("id, name, active")
+        .in("role", ["mitarbeiter", "chef"])
+        .order("name"),
       supabase
         .from("shift_details")
         .select(

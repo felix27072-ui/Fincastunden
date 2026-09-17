@@ -7,7 +7,7 @@ export default async function MeinePage() {
   const me = await getCurrentEmployee();
   if (!me) return null; // Layout leitet bereits um.
 
-  if (me.role !== "mitarbeiter") {
+  if (me.role === "steuer") {
     return (
       <p className="mt-4 text-sm text-muted">
         Für dieses Konto sind keine eigenen Schichten hinterlegt. Nutze die Woche oder die
