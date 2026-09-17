@@ -139,6 +139,12 @@ export default function AbrechnungClient({
         <Button onClick={exportCSV} className="mt-3 w-full">
           Monat als CSV exportieren
         </Button>
+        <a
+          href="/abrechnung/export-stundenzettel"
+          className="mt-2 block w-full border border-crema bg-transparent px-4 py-3 text-center text-sm font-semibold text-crema"
+        >
+          Alle Stundenzettel exportieren
+        </a>
       </div>
 
       {payouts.length > 0 && (
