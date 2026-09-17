@@ -29,11 +29,17 @@ export default function LoginForm({ next }: { next: string }) {
 
     if (error) {
       setStatus("error");
-      setErrorMsg(
-        error.message.includes("Signups not allowed")
-          ? "Diese E-Mail-Adresse ist noch nicht als Mitarbeiter:in angelegt. Bitte wende dich an Joe."
-          : "Der Link konnte nicht verschickt werden. Bitte versuch es gleich noch einmal."
-      );
+      if (error.message.includes("Signups not allowed")) {
+        setErrorMsg(
+          "Diese E-Mail-Adresse ist noch nicht als Mitarbeiter:in angelegt. Bitte wende dich an Joe."
+        );
+      } else if (error.message.toLowerCase().includes("rate limit")) {
+        setErrorMsg(
+          "Zu viele Anmeldelinks kurz hintereinander angefordert. Bitte eine Minute warten und nochmal versuchen."
+        );
+      } else {
+        setErrorMsg(`Der Link konnte nicht verschickt werden: ${error.message}`);
+      }
       return;
     }
     setStatus("sent");
