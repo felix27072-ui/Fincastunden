@@ -35,7 +35,7 @@ export default function LoginForm({ next }: { next: string }) {
         );
       } else if (error.message.toLowerCase().includes("rate limit")) {
         setErrorMsg(
-          "Zu viele Anmeldelinks kurz hintereinander angefordert. Bitte eine Minute warten und nochmal versuchen."
+          "Gerade wurden zu viele Anmeldemails verschickt (Supabase erlaubt davon nur wenige pro Stunde, solange kein eigener Mail-Versand eingerichtet ist). Bitte etwas später erneut versuchen."
         );
       } else {
         setErrorMsg(`Der Link konnte nicht verschickt werden: ${error.message}`);
