@@ -67,6 +67,12 @@ export function monthRange(mk: string): [first: string, last: string] {
     .slice(0, 10);
   return [first, last];
 }
+export function isEndOfMonth(withinDays = 5): boolean {
+  const t = today();
+  const [, last] = monthRange(monthKey(t));
+  return Number(last.slice(8, 10)) - Number(t.slice(8, 10)) < withinDays;
+}
+
 export function weeksOfMonth(mk: string): string[] {
   const [first, last] = monthRange(mk);
   const out: string[] = [];
