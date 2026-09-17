@@ -10,18 +10,17 @@ Design-/Logikvorlage.
 Gebaut: Projekt-Setup, SQL-Migration (Schema, berechnete Stunden, RLS,
 Audit-Trigger), Magic-Link-Login, Wochenplan, Meine Schichten, Auszahlen mit
 Unterschrift (Supabase Storage) und Quittung, Abrechnung (Summen je
-Mitarbeiter, CSV-Export, Auszahlungsliste, Änderungsprotokoll).
-
-Noch offen (nächster Schritt): Mitarbeiter-Verwaltung für Joe (Supabase Auth
-Admin API, service role) — bis dahin Mitarbeiter wie unten beschrieben über
-Supabase Studio anlegen.
+Mitarbeiter, CSV-Export, Auszahlungsliste, Änderungsprotokoll), Team
+(Mitarbeiter-Verwaltung für den Chef — anlegen/deaktivieren, ohne
+Supabase Studio).
 
 ## Setup
 
 1. Supabase-Projekt anlegen.
 2. `.env.local.example` nach `.env.local` kopieren und mit den Werten aus
    *Project Settings → API* füllen (`NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — Letzterer
+   ist geheim, nie committen, wird für „Team" gebraucht).
 3. Migrationen einspielen — entweder im Supabase Dashboard unter *SQL Editor*
    die Dateien aus `supabase/migrations/` der Reihe nach ausführen
    (`0001_init.sql`, `0002_payouts.sql`, `0003_audit_log_view.sql`), oder mit
@@ -30,18 +29,20 @@ Supabase Studio anlegen.
    OTP" (Magic Link) aktiv ist, und unter *Authentication → URL Configuration*
    die Redirect-URL `<deine-domain>/auth/callback` eintragen (für lokale
    Entwicklung zusätzlich `http://localhost:3000/auth/callback`).
-5. Ersten Mitarbeiter (Joe, Rolle `chef`) anlegen: In Supabase unter
-   *Authentication → Users* per "Invite user" oder "Add user" einen Nutzer
-   mit Joes E-Mail-Adresse erstellen, dann im SQL Editor:
+5. Ersten Mitarbeiter (Joe, Rolle `chef`) anlegen — **einmalig** noch per Hand,
+   weil "Team" selbst schon einen `chef` braucht, der es benutzt: In Supabase
+   unter *Authentication → Users* per "Add user" einen Nutzer mit Joes
+   E-Mail-Adresse erstellen (Haken bei "Auto Confirm User"), dann im SQL
+   Editor:
 
    ```sql
    insert into employees (id, name, email, role, rate_cents)
    values ('<user-id-aus-auth.users>', 'Joe', 'joe@example.com', 'chef', 0);
    ```
 
-   Weitere Mitarbeiter genauso über Supabase Studio anlegen, bis Joe das
-   selbst in der App erledigen kann (Rolle `mitarbeiter`, `steuer` für die
-   Steuerberatung).
+   Alle weiteren Mitarbeiter kann Joe danach selbst über den Tab **„Team"**
+   in der App anlegen (Name, E-Mail, Rolle, Stundensatz) — kein Supabase
+   Studio mehr nötig.
 6. `npm install`, dann `npm run dev` und `http://localhost:3000` öffnen.
 
 ## Deployment (Vercel)
@@ -50,9 +51,10 @@ Kein lokaler Rechner nötig — geht komplett über die Vercel-Weboberfläche:
 
 1. Auf [vercel.com](https://vercel.com) mit demselben GitHub-Account einloggen,
    unter dem das Repo liegt, und das Repo importieren.
-2. Beim Import unter **Environment Variables** dieselben zwei Werte wie in
+2. Beim Import unter **Environment Variables** dieselben drei Werte wie in
    `.env.local` eintragen (`NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_ANON_KEY`), Umgebung „Production and Preview".
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`), Umgebung
+   „Production and Preview".
 3. Deployen. Danach die zugewiesene Adresse (`https://<projekt>.vercel.app`)
    in Supabase unter *Authentication → URL Configuration* als zusätzliche
    Redirect-URL eintragen: `https://<projekt>.vercel.app/auth/callback`.
@@ -74,10 +76,12 @@ app/(app)/           Gemeinsames Layout (TopBar, Tabs) für alle angemeldeten Se
 app/(app)/woche/      Wochenplan (Startseite) — Grid, Tages- und Schichtansicht
 app/(app)/meine/      Meine Schichten — offener Betrag, eigene Liste, Auszahlen
 app/(app)/abrechnung/ Abrechnung (chef/steuer) — Summen, CSV-Export, Protokoll
+app/(app)/team/       Team (chef) — Mitarbeiter anlegen/deaktivieren
 app/login/            Magic-Link-Anmeldung
 app/auth/             OAuth-Callback, Fehlerseiten, Abmeldung ohne Zugang
 components/payout/    Auszahlen: Schichtauswahl, Unterschrift-Canvas, Quittung
 lib/supabase/         Browser-/Server-/Proxy-Clients
+lib/supabase/admin.ts  Service-Role-Client (nur "Team", nie im Browser)
 lib/format.ts          Formatierung & Datumslogik (Dezimalkomma, KW, Monat)
 lib/audit.ts            Änderungsprotokoll: Titel/Detailtext je Eintrag
 lib/database.types.ts  Handgepflegte Supabase-Typen passend zur Migration

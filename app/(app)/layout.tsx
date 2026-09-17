@@ -18,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             ...(me.role !== "mitarbeiter"
               ? [{ href: "/abrechnung", label: "Abrechnung" }]
               : []),
+            ...(me.role === "chef" ? [{ href: "/team", label: "Team" }] : []),
           ]}
         />
         {children}

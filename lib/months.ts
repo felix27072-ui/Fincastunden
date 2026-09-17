@@ -3,9 +3,9 @@ import type { Database } from "@/lib/database.types";
 import { addMonths, monthKey, today } from "@/lib/format";
 
 /**
- * Alle Monate mit mindestens einer Schicht, plus immer der aktuelle und der
- * nächste Monat — auch ohne Schichten wählbar, damit sich z. B. schon jetzt
- * eine Schicht für Anfang nächsten Monats eintragen lässt.
+ * Jeder Monat des laufenden Kalenderjahres (zum Zurückblättern bei
+ * Differenzen, auch ohne Schichten), plus der nächste Monat, plus jeder
+ * Monat mit tatsächlichen Schichten (deckt auch frühere Jahre ab).
  */
 export async function getAvailableMonths(
   supabase: SupabaseClient<Database>
@@ -16,7 +16,10 @@ export async function getAvailableMonths(
     .order("work_date", { ascending: false });
 
   const monthSet = new Set((data ?? []).map((r) => monthKey(r.work_date)));
-  monthSet.add(monthKey(today()));
+  const year = Number(monthKey(today()).slice(0, 4));
+  for (let m = 1; m <= 12; m++) {
+    monthSet.add(`${year}-${String(m).padStart(2, "0")}`);
+  }
   monthSet.add(addMonths(monthKey(today()), 1));
   return [...monthSet].sort().reverse();
 }
