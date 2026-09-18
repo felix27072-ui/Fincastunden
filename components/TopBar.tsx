@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { signOut } from "@/app/(app)/actions";
+import PasswordSheet from "@/components/PasswordSheet";
 import type { Role } from "@/lib/database.types";
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -9,6 +13,8 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 export default function TopBar({ name, role }: { name: string; role: Role }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="flex items-center gap-3 bg-naranja px-3 py-2.5">
       <Image src="/logo.png" alt="la Finca" width={46} height={46} className="shrink-0" />
@@ -18,6 +24,13 @@ export default function TopBar({ name, role }: { name: string; role: Role }) {
           {name} · {ROLE_LABEL[role]}
         </div>
       </div>
+      <button
+        type="button"
+        onClick={() => setShowPassword(true)}
+        className="shrink-0 border border-white/35 bg-black/20 px-3 py-2 text-xs font-medium text-white"
+      >
+        Passwort
+      </button>
       <form action={signOut}>
         <button
           type="submit"
@@ -26,6 +39,7 @@ export default function TopBar({ name, role }: { name: string; role: Role }) {
           Abmelden
         </button>
       </form>
+      {showPassword && <PasswordSheet onClose={() => setShowPassword(false)} />}
     </div>
   );
 }
