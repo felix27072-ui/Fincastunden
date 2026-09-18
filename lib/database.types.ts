@@ -28,6 +28,7 @@ export interface Database {
           rate_cents: number;
           role: Role;
           active: boolean;
+          logs_hours: boolean;
           created_at: string;
         };
         Insert: {
@@ -37,6 +38,7 @@ export interface Database {
           rate_cents?: number;
           role: Role;
           active?: boolean;
+          logs_hours?: boolean;
         };
         Update: Partial<{
           name: string;
@@ -44,6 +46,7 @@ export interface Database {
           rate_cents: number;
           role: Role;
           active: boolean;
+          logs_hours: boolean;
         }>;
         Relationships: [];
       };
@@ -130,6 +133,7 @@ export interface Database {
           name: string;
           role: Role;
           active: boolean;
+          logs_hours: boolean;
           created_at: string;
           email: string | null;
           rate_cents: number | null;

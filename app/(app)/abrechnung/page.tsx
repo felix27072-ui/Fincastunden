@@ -28,7 +28,7 @@ export default async function AbrechnungPage({
       supabase
         .from("employees_view")
         .select("id, name, active")
-        .in("role", ["mitarbeiter", "chef"])
+        .or("role.eq.mitarbeiter,and(role.eq.chef,logs_hours.eq.true)")
         .order("name"),
       supabase
         .from("shift_details")

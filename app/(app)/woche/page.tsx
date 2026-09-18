@@ -23,7 +23,7 @@ export default async function WochePage({
     supabase
       .from("employees_view")
       .select("id, name, role, active, rate_cents")
-      .in("role", ["mitarbeiter", "chef"])
+      .or("role.eq.mitarbeiter,and(role.eq.chef,logs_hours.eq.true)")
       .eq("active", true)
       .order("name"),
   ]);

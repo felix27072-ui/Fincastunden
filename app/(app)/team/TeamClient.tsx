@@ -127,6 +127,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
               <div className="truncate text-xs text-muted">
                 {emp.email} · {ROLE_LABEL[emp.role]}
                 {emp.role !== "steuer" && ` · ${eur(emp.rate_cents / 100)}/h`}
+                {emp.role === "chef" && (emp.logs_hours ? " · erfasst Stunden" : " · keine eigenen Stunden")}
               </div>
             </button>
             <Button

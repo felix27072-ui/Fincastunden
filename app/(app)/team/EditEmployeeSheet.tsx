@@ -20,6 +20,7 @@ export default function EditEmployeeSheet({
   const [email, setEmail] = useState(employee.email);
   const [role, setRole] = useState<Role>(employee.role);
   const [rate, setRate] = useState((employee.rate_cents / 100).toFixed(2));
+  const [logsHours, setLogsHours] = useState(employee.logs_hours);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
@@ -32,7 +33,7 @@ export default function EditEmployeeSheet({
     }
     startTransition(async () => {
       try {
-        await updateEmployee({ id: employee.id, name, email, role, rateEuros });
+        await updateEmployee({ id: employee.id, name, email, role, rateEuros, logsHours });
         onSaved();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Speichern fehlgeschlagen.");
@@ -79,6 +80,17 @@ export default function EditEmployeeSheet({
           />
         </Field>
       </div>
+
+      {role === "chef" && (
+        <label className="mb-3 flex items-center gap-2 text-sm text-crema">
+          <input
+            type="checkbox"
+            checked={logsHours}
+            onChange={(e) => setLogsHours(e.target.checked)}
+          />
+          Erfasst eigene Stunden (erscheint im Wochenplan wie ein:e Mitarbeiter:in)
+        </label>
+      )}
 
       {error && <p className="mb-2 text-sm text-naranja-dark">{error}</p>}
 

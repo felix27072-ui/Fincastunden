@@ -16,7 +16,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Tabs
           items={[
             { href: "/woche", label: "Woche" },
-            { href: "/meine", label: "Meine Schichten" },
+            ...(me.role !== "chef" || me.logs_hours
+              ? [{ href: "/meine", label: "Meine Schichten" }]
+              : []),
             ...(me.role !== "mitarbeiter"
               ? [{ href: "/abrechnung", label: "Abrechnung" }]
               : []),

@@ -70,13 +70,14 @@ export type EmployeeListItem = {
   role: Role;
   active: boolean;
   rate_cents: number;
+  logs_hours: boolean;
 };
 
 export async function getEmployees(): Promise<EmployeeListItem[]> {
   const supabase = await requireChef();
   const { data } = await supabase
     .from("employees")
-    .select("id, name, email, role, active, rate_cents")
+    .select("id, name, email, role, active, rate_cents, logs_hours")
     .order("name");
   return data ?? [];
 }
@@ -95,6 +96,7 @@ export type UpdateEmployeeInput = {
   email: string;
   role: Role;
   rateEuros: number;
+  logsHours: boolean;
 };
 
 export async function updateEmployee(input: UpdateEmployeeInput) {
@@ -129,6 +131,7 @@ export async function updateEmployee(input: UpdateEmployeeInput) {
       email,
       role: input.role,
       rate_cents: Math.round(input.rateEuros * 100),
+      logs_hours: input.role === "chef" ? input.logsHours : false,
     })
     .eq("id", input.id);
   if (error) throw new Error(error.message);
