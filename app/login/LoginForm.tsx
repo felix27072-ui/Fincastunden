@@ -3,8 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Mode = "link" | "password";
-type Status = "idle" | "sending" | "sent" | "error";
+type Mode = "code" | "password";
+type CodeStep = "email" | "code";
+type Status = "idle" | "sending" | "error";
 
 function friendlyError(message: string): string {
   if (message.includes("Signups not allowed")) {
@@ -16,37 +17,37 @@ function friendlyError(message: string): string {
   if (message.toLowerCase().includes("invalid login credentials")) {
     return "E-Mail oder Passwort ist falsch.";
   }
+  if (message.toLowerCase().includes("token has expired") || message.toLowerCase().includes("invalid")) {
+    return "Der Code ist falsch oder abgelaufen. Fordere einen neuen an.";
+  }
   return `Anmeldung fehlgeschlagen: ${message}`;
 }
 
 export default function LoginForm({ next }: { next: string }) {
-  const [mode, setMode] = useState<Mode>("link");
+  const [mode, setMode] = useState<Mode>("code");
+  const [codeStep, setCodeStep] = useState<CodeStep>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   function switchMode(next: Mode) {
     setMode(next);
+    setCodeStep("email");
     setStatus("idle");
     setErrorMsg("");
   }
 
-  async function onSubmitLink(e: FormEvent) {
+  async function onRequestCode(e: FormEvent) {
     e.preventDefault();
     setStatus("sending");
     setErrorMsg("");
 
     const supabase = createClient();
-    const redirectTo = new URL("/auth/callback", window.location.origin);
-    redirectTo.searchParams.set("next", next);
-
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: {
-        emailRedirectTo: redirectTo.toString(),
-        shouldCreateUser: false,
-      },
+      options: { shouldCreateUser: false },
     });
 
     if (error) {
@@ -54,7 +55,28 @@ export default function LoginForm({ next }: { next: string }) {
       setErrorMsg(friendlyError(error.message));
       return;
     }
-    setStatus("sent");
+    setStatus("idle");
+    setCodeStep("code");
+  }
+
+  async function onVerifyCode(e: FormEvent) {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: code.trim(),
+      type: "email",
+    });
+
+    if (error) {
+      setStatus("error");
+      setErrorMsg(friendlyError(error.message));
+      return;
+    }
+    window.location.assign(next);
   }
 
   async function onSubmitPassword(e: FormEvent) {
@@ -76,17 +98,52 @@ export default function LoginForm({ next }: { next: string }) {
     window.location.assign(next);
   }
 
-  if (status === "sent") {
+  if (mode === "code" && codeStep === "code") {
     return (
-      <div className="border border-line bg-surface p-4 text-sm leading-relaxed">
-        <p className="font-semibold text-crema">Link verschickt.</p>
-        <p className="mt-1 text-muted">
-          Wir haben einen Anmeldelink an <span className="text-crema">{email}</span> geschickt.
-          E-Mails prüfen und antippen — danach bleibst du eingeloggt.
-        </p>
+      <div>
+        <div className="border border-line bg-surface p-4 text-sm leading-relaxed">
+          <p className="font-semibold text-crema">Code verschickt.</p>
+          <p className="mt-1 text-muted">
+            Wir haben einen 6-stelligen Code an <span className="text-crema">{email}</span>{" "}
+            geschickt. Einfach hier eintragen, egal in welcher App du die Mail liest.
+          </p>
+        </div>
+
+        <form onSubmit={onVerifyCode} className="mt-3 flex flex-col gap-3">
+          <label className="block">
+            <span className="mb-1 block text-xs text-muted">Code</span>
+            <input
+              type="text"
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder="000000"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full border border-line bg-carbon px-3 py-3 text-center text-2xl tracking-[0.3em] text-crema outline-none placeholder:text-muted focus-visible:border-naranja"
+            />
+          </label>
+
+          {status === "error" && <p className="text-sm text-naranja-dark">{errorMsg}</p>}
+
+          <button
+            type="submit"
+            disabled={status === "sending"}
+            className="w-full bg-naranja px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {status === "sending" ? "Wird geprüft …" : "Anmelden"}
+          </button>
+        </form>
+
         <button
           type="button"
-          onClick={() => setStatus("idle")}
+          onClick={() => {
+            setCodeStep("email");
+            setStatus("idle");
+            setCode("");
+            setErrorMsg("");
+          }}
           className="mt-3 text-xs text-muted underline underline-offset-2"
         >
           Andere E-Mail-Adresse verwenden
@@ -100,12 +157,12 @@ export default function LoginForm({ next }: { next: string }) {
       <div className="mb-3 flex gap-1.5 text-xs">
         <button
           type="button"
-          onClick={() => switchMode("link")}
+          onClick={() => switchMode("code")}
           className={`flex-1 border px-3 py-2 ${
-            mode === "link" ? "border-naranja bg-naranja text-white" : "border-line text-muted"
+            mode === "code" ? "border-naranja bg-naranja text-white" : "border-line text-muted"
           }`}
         >
-          Anmeldelink
+          Code
         </button>
         <button
           type="button"
@@ -119,7 +176,7 @@ export default function LoginForm({ next }: { next: string }) {
       </div>
 
       <form
-        onSubmit={mode === "link" ? onSubmitLink : onSubmitPassword}
+        onSubmit={mode === "code" ? onRequestCode : onSubmitPassword}
         className="flex flex-col gap-3"
       >
         <label className="block">
@@ -160,15 +217,15 @@ export default function LoginForm({ next }: { next: string }) {
         >
           {status === "sending"
             ? "Wird geprüft …"
-            : mode === "link"
-              ? "Anmeldelink schicken"
+            : mode === "code"
+              ? "Code schicken"
               : "Anmelden"}
         </button>
       </form>
 
       {mode === "password" && (
         <p className="mt-2 text-xs text-muted">
-          Noch kein Passwort? Einmal per Anmeldelink einloggen und dort unter „Passwort&quot; eins
+          Noch kein Passwort? Einmal per Code einloggen und dort unter „Passwort&quot; eins
           festlegen.
         </p>
       )}
