@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEmployee } from "@/lib/auth";
 import { getAvailableMonths } from "@/lib/months";
-import { monthRange } from "@/lib/format";
+import { monthKey, monthRange, today } from "@/lib/format";
 import MonthSelect from "@/components/MonthSelect";
 import AbrechnungClient from "./AbrechnungClient";
 import type { ShiftDetail } from "@/app/(app)/woche/types";
@@ -20,7 +20,7 @@ export default async function AbrechnungPage({
 
   const supabase = await createClient();
   const months = await getAvailableMonths(supabase);
-  const mk = month && months.includes(month) ? month : months[0];
+  const mk = month && months.includes(month) ? month : monthKey(today());
   const [first, last] = monthRange(mk);
 
   const [{ data: staffRows }, { data: shiftRows }, { data: payoutRows }, { data: openRows }] =

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEmployee } from "@/lib/auth";
-import { addDays, isoWeek, mondayOf, today, weeksOfMonth, dShort } from "@/lib/format";
+import { addDays, isoWeek, mondayOf, monthKey, today, weeksOfMonth, dShort } from "@/lib/format";
 import { getAvailableMonths } from "@/lib/months";
 import MonthSelect from "@/components/MonthSelect";
 import WeekGrid from "./WeekGrid";
@@ -28,7 +28,8 @@ export default async function WochePage({
       .order("name"),
   ]);
 
-  const mk = month && months.includes(month) ? month : months[0];
+  const currentMonth = monthKey(today());
+  const mk = month && months.includes(month) ? month : currentMonth;
   const weeks = weeksOfMonth(mk);
   const wantedWeek = week && weeks.includes(week) ? week : mondayOf(today());
   const monday = weeks.includes(wantedWeek) ? wantedWeek : weeks[0];
