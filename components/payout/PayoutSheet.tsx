@@ -47,16 +47,16 @@ export default function PayoutSheet({
   function confirm() {
     setError("");
     startTransition(async () => {
-      try {
-        const payout = await createPayout({
-          employeeId,
-          shiftIds: selected,
-          signatureDataUrl: signOnDevice ? (padRef.current?.get() ?? null) : null,
-        });
-        onConfirm(payout);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Auszahlung fehlgeschlagen.");
+      const result = await createPayout({
+        employeeId,
+        shiftIds: selected,
+        signatureDataUrl: signOnDevice ? (padRef.current?.get() ?? null) : null,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
       }
+      onConfirm(result.payout);
     });
   }
 

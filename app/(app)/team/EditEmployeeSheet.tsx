@@ -32,12 +32,12 @@ export default function EditEmployeeSheet({
       return;
     }
     startTransition(async () => {
-      try {
-        await updateEmployee({ id: employee.id, name, email, role, rateEuros, logsHours });
-        onSaved();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Speichern fehlgeschlagen.");
+      const result = await updateEmployee({ id: employee.id, name, email, role, rateEuros, logsHours });
+      if (result.error) {
+        setError(result.error);
+        return;
       }
+      onSaved();
     });
   }
 

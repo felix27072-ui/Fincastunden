@@ -5,6 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Role } from "@/lib/database.types";
 
+// Next.js redigiert Fehlermeldungen aus geworfenen Errors in Server Actions
+// im Produktions-Build (nur ein "digest" kommt beim Client an) — erwartbare
+// Fehler (Validierung, "schon angelegt" etc.) deshalb als Rückgabewert
+// modellieren statt zu werfen, wie von Next.js empfohlen. throw bleibt nur
+// für echte Ausnahmefälle (keine Session, keine Chef-Rolle).
+export type ActionResult = { error: string | null };
+
 async function requireChef() {
   const supabase = await createClient();
   const {
@@ -29,7 +36,7 @@ export type CreateEmployeeInput = {
   rateEuros: number;
 };
 
-export async function createEmployee(input: CreateEmployeeInput) {
+export async function createEmployee(input: CreateEmployeeInput): Promise<ActionResult> {
   const supabase = await requireChef();
   const admin = createAdminClient();
   const email = input.email.trim();
@@ -42,7 +49,7 @@ export async function createEmployee(input: CreateEmployeeInput) {
   let userId: string;
   if (createError || !created.user) {
     if (!createError?.message.includes("already been registered")) {
-      throw new Error(createError?.message ?? "Nutzer konnte nicht angelegt werden.");
+      return { error: createError?.message ?? "Nutzer konnte nicht angelegt werden." };
     }
     // E-Mail hat schon einen Auth-Nutzer, aber keine employees-Zeile — z. B.
     // weil jemand vor dem Anlegen schon "Mit Google anmelden" probiert hat.
@@ -53,7 +60,7 @@ export async function createEmployee(input: CreateEmployeeInput) {
     });
     const existing = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
     if (listError || !existing) {
-      throw new Error("Diese E-Mail-Adresse ist schon angelegt, aber der Nutzer wurde nicht gefunden.");
+      return { error: "Diese E-Mail-Adresse ist schon angelegt, aber der Nutzer wurde nicht gefunden." };
     }
     userId = existing.id;
   } else {
@@ -73,12 +80,13 @@ export async function createEmployee(input: CreateEmployeeInput) {
     if (!createError) {
       await admin.auth.admin.deleteUser(userId);
     }
-    throw new Error(insertError.message);
+    return { error: insertError.message };
   }
 
   revalidatePath("/team");
   revalidatePath("/woche");
   revalidatePath("/abrechnung");
+  return { error: null };
 }
 
 export type EmployeeListItem = {
@@ -100,12 +108,13 @@ export async function getEmployees(): Promise<EmployeeListItem[]> {
   return data ?? [];
 }
 
-export async function setEmployeeActive(id: string, active: boolean) {
+export async function setEmployeeActive(id: string, active: boolean): Promise<ActionResult> {
   const supabase = await requireChef();
   const { error } = await supabase.from("employees").update({ active }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
   revalidatePath("/team");
   revalidatePath("/woche");
+  return { error: null };
 }
 
 export type UpdateEmployeeInput = {
@@ -117,7 +126,7 @@ export type UpdateEmployeeInput = {
   logsHours: boolean;
 };
 
-export async function updateEmployee(input: UpdateEmployeeInput) {
+export async function updateEmployee(input: UpdateEmployeeInput): Promise<ActionResult> {
   const supabase = await requireChef();
   const email = input.email.trim();
 
@@ -134,11 +143,11 @@ export async function updateEmployee(input: UpdateEmployeeInput) {
       email_confirm: true,
     });
     if (authError) {
-      throw new Error(
-        authError.message.includes("already been registered")
+      return {
+        error: authError.message.includes("already been registered")
           ? "Diese E-Mail-Adresse wird schon von einem anderen Konto verwendet."
-          : authError.message
-      );
+          : authError.message,
+      };
     }
   }
 
@@ -152,10 +161,11 @@ export async function updateEmployee(input: UpdateEmployeeInput) {
       logs_hours: input.role === "chef" ? input.logsHours : false,
     })
     .eq("id", input.id);
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
 
   revalidatePath("/team");
   revalidatePath("/woche");
   revalidatePath("/abrechnung");
   revalidatePath("/meine");
+  return { error: null };
 }

@@ -18,13 +18,21 @@ export type CreatePayoutInput = {
   signatureDataUrl: string | null;
 };
 
-export async function createPayout(input: CreatePayoutInput): Promise<PayoutRow> {
+// Next.js redigiert Fehlermeldungen aus geworfenen Errors in Server Actions
+// im Produktions-Build (nur ein "digest" kommt beim Client an) — erwartbare
+// Fehler deshalb als Rückgabewert modellieren statt zu werfen, wie von
+// Next.js empfohlen.
+export type CreatePayoutResult =
+  | { ok: false; error: string }
+  | { ok: true; payout: PayoutRow };
+
+export async function createPayout(input: CreatePayoutInput): Promise<CreatePayoutResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht angemeldet.");
-  if (!input.shiftIds.length) throw new Error("Keine Schichten ausgewählt.");
+  if (!user) return { ok: false, error: "Nicht angemeldet." };
+  if (!input.shiftIds.length) return { ok: false, error: "Keine Schichten ausgewählt." };
 
   const payoutId = crypto.randomUUID();
   let signaturePath: string | null = null;
@@ -35,7 +43,7 @@ export async function createPayout(input: CreatePayoutInput): Promise<PayoutRow>
     const { error: uploadError } = await supabase.storage
       .from("signatures")
       .upload(signaturePath, Buffer.from(base64, "base64"), { contentType: "image/png" });
-    if (uploadError) throw new Error(uploadError.message);
+    if (uploadError) return { ok: false, error: uploadError.message };
   }
 
   const { data, error } = await supabase.rpc("create_payout", {
@@ -44,13 +52,13 @@ export async function createPayout(input: CreatePayoutInput): Promise<PayoutRow>
     p_shift_ids: input.shiftIds,
     p_signature_path: signaturePath,
   });
-  if (error) throw new Error(error.message);
+  if (error) return { ok: false, error: error.message };
 
   revalidatePath("/woche");
   revalidatePath("/meine");
   revalidatePath("/abrechnung");
 
-  return data;
+  return { ok: true, payout: data };
 }
 
 export type PayoutShiftLine = {

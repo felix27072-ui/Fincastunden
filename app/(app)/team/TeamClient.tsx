@@ -34,29 +34,25 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
       return;
     }
     startTransition(async () => {
-      try {
-        await createEmployee({ name, email, role, rateEuros });
-        setSuccess(`${name} wurde angelegt. Kann sich ab sofort einloggen.`);
-        setName("");
-        setEmail("");
-        setRole("mitarbeiter");
-        setRate("13.90");
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Anlegen fehlgeschlagen.");
+      const result = await createEmployee({ name, email, role, rateEuros });
+      if (result.error) {
+        setError(result.error);
+        return;
       }
+      setSuccess(`${name} wurde angelegt. Kann sich ab sofort einloggen.`);
+      setName("");
+      setEmail("");
+      setRole("mitarbeiter");
+      setRate("13.90");
     });
   }
 
   function toggleActive(emp: EmployeeListItem) {
     setTogglingId(emp.id);
     startTransition(async () => {
-      try {
-        await setEmployeeActive(emp.id, !emp.active);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Änderung fehlgeschlagen.");
-      } finally {
-        setTogglingId(null);
-      }
+      const result = await setEmployeeActive(emp.id, !emp.active);
+      if (result.error) setError(result.error);
+      setTogglingId(null);
     });
   }
 
