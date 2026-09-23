@@ -32,29 +32,47 @@ export type CreateEmployeeInput = {
 export async function createEmployee(input: CreateEmployeeInput) {
   const supabase = await requireChef();
   const admin = createAdminClient();
+  const email = input.email.trim();
 
   const { data: created, error: createError } = await admin.auth.admin.createUser({
-    email: input.email.trim(),
+    email,
     email_confirm: true,
   });
+
+  let userId: string;
   if (createError || !created.user) {
-    throw new Error(
-      createError?.message.includes("already been registered")
-        ? "Diese E-Mail-Adresse ist schon angelegt."
-        : (createError?.message ?? "Nutzer konnte nicht angelegt werden.")
-    );
+    if (!createError?.message.includes("already been registered")) {
+      throw new Error(createError?.message ?? "Nutzer konnte nicht angelegt werden.");
+    }
+    // E-Mail hat schon einen Auth-Nutzer, aber keine employees-Zeile — z. B.
+    // weil jemand vor dem Anlegen schon "Mit Google anmelden" probiert hat.
+    // Bestehenden Nutzer wiederverwenden statt zu scheitern.
+    const { data: list, error: listError } = await admin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+    const existing = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    if (listError || !existing) {
+      throw new Error("Diese E-Mail-Adresse ist schon angelegt, aber der Nutzer wurde nicht gefunden.");
+    }
+    userId = existing.id;
+  } else {
+    userId = created.user.id;
   }
 
   const { error: insertError } = await supabase.from("employees").insert({
-    id: created.user.id,
+    id: userId,
     name: input.name.trim(),
-    email: input.email.trim(),
+    email,
     role: input.role,
     rate_cents: Math.round(input.rateEuros * 100),
   });
   if (insertError) {
-    // Keinen Auth-Nutzer ohne employees-Zeile stehen lassen.
-    await admin.auth.admin.deleteUser(created.user.id);
+    // Nur einen gerade neu erstellten Auth-Nutzer wieder löschen — einen
+    // bereits vorher bestehenden (z. B. durch Google-Login) nicht anfassen.
+    if (!createError) {
+      await admin.auth.admin.deleteUser(userId);
+    }
     throw new Error(insertError.message);
   }
 
