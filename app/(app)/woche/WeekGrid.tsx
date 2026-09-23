@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DAYS, dShort, eur, hrs, isoWeek } from "@/lib/format";
+import { dShort, eur, hrs, isoWeek, weekdayLabel } from "@/lib/format";
 import DaySheet from "./DaySheet";
 import ShiftSheet, { type EditableShift } from "./ShiftSheet";
 import { getShiftHistory, type HistoryEntry } from "./actions";
@@ -83,16 +83,18 @@ export default function WeekGrid({
     setHistory([]);
   }
 
+  const gridCols = { gridTemplateColumns: `58px repeat(${days.length}, minmax(0, 1fr))` };
+
   return (
     <>
       <div className="mt-3 border border-line">
-        <div className="grid grid-cols-[58px_repeat(7,minmax(0,1fr))] bg-naranja">
+        <div className="grid bg-naranja" style={gridCols}>
           <div className="self-center px-1.5 py-1.5 text-[10px] font-bold tracking-[0.1em] text-white">
             NAME
           </div>
-          {days.map((iso, i) => (
+          {days.map((iso) => (
             <div key={iso} className="border-l border-white/25 px-0.5 py-1.5 text-center">
-              <div className="text-xs font-bold text-white">{DAYS[i]}</div>
+              <div className="text-xs font-bold text-white">{weekdayLabel(iso)}</div>
               <div className="tabular-nums text-[9px] text-white/85">{dShort(iso)}</div>
             </div>
           ))}
@@ -106,9 +108,8 @@ export default function WeekGrid({
           return (
             <div
               key={emp.id}
-              className={`grid grid-cols-[58px_repeat(7,minmax(0,1fr))] border-t border-line ${
-                emp.id === me.id ? "bg-naranja/10" : ""
-              }`}
+              className={`grid border-t border-line ${emp.id === me.id ? "bg-naranja/10" : ""}`}
+              style={gridCols}
             >
               <div className="self-center overflow-hidden px-1.5 py-2">
                 <div

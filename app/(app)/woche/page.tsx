@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEmployee } from "@/lib/auth";
-import { addDays, isoWeek, mondayOf, monthKey, today, weeksOfMonth, dShort } from "@/lib/format";
+import { isoWeek, mondayOf, monthKey, today, weeksOfMonth, weekDaysInMonth, dShort } from "@/lib/format";
 import { getAvailableMonths } from "@/lib/months";
 import MonthSelect from "@/components/MonthSelect";
 import WeekGrid from "./WeekGrid";
@@ -33,7 +33,7 @@ export default async function WochePage({
   const weeks = weeksOfMonth(mk);
   const wantedWeek = week && weeks.includes(week) ? week : mondayOf(today());
   const monday = weeks.includes(wantedWeek) ? wantedWeek : weeks[0];
-  const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  const days = weekDaysInMonth(monday, mk);
 
   const { data: shiftRows } = await supabase
     .from("shift_details")
@@ -41,7 +41,7 @@ export default async function WochePage({
       "id, employee_id, employee_name, work_date, start_time, end_time, minutes, hours, note, paid, paid_on, rate_cents, amount_cents"
     )
     .gte("work_date", days[0])
-    .lte("work_date", days[6])
+    .lte("work_date", days[days.length - 1])
     .order("work_date")
     .order("start_time");
 
@@ -63,7 +63,7 @@ export default async function WochePage({
                 : "border-line text-muted"
             }`}
           >
-            KW {isoWeek(m)} · {dShort(m)}
+            KW {isoWeek(m)} · {dShort(weekDaysInMonth(m, mk)[0])}
           </Link>
         ))}
       </div>

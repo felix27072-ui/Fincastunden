@@ -7,7 +7,7 @@ import PayoutSheet, { type OpenShift } from "@/components/payout/PayoutSheet";
 import ReceiptView from "@/components/payout/ReceiptView";
 import { getOpenShiftsForEmployee, getAuditLog } from "@/app/(app)/actions";
 import { auditDetail, auditTitle, type AuditLogEntry } from "@/lib/audit";
-import { DAYS, de, dLabel, eur, hrs } from "@/lib/format";
+import { de, dLabel, eur, hrs, weekdayLabel } from "@/lib/format";
 import { download } from "@/lib/download";
 import type { PayoutRow } from "@/lib/database.types";
 import type { ShiftDetail } from "@/app/(app)/woche/types";
@@ -77,7 +77,7 @@ export default function AbrechnungClient({
       "Notiz",
     ];
     const rows = monthShifts.map((s) => {
-      const weekday = DAYS[(new Date(s.work_date + "T12:00:00").getDay() + 6) % 7];
+      const weekday = weekdayLabel(s.work_date);
       return [
         s.employee_name,
         dLabel(s.work_date),

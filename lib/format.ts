@@ -83,3 +83,15 @@ export function weeksOfMonth(mk: string): string[] {
   }
   return out;
 }
+
+// Tage der Montag-Sonntag-Woche `monday`, die tatsächlich in Monat `mk`
+// liegen — Randwochen an Monatsanfang/-ende zeigen so nur ihre echten
+// Tage statt eine volle 7-Tage-Woche mit Tagen aus dem Nachbarmonat.
+export function weekDaysInMonth(monday: string, mk: string): string[] {
+  const [first, last] = monthRange(mk);
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i)).filter(
+    (d) => d >= first && d <= last
+  );
+}
+
+export const weekdayLabel = (iso: string) => DAYS[(asDate(iso).getDay() + 6) % 7];
