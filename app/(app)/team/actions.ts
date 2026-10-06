@@ -132,7 +132,7 @@ export async function updateEmployee(input: UpdateEmployeeInput): Promise<Action
 
   const { data: current, error: currentError } = await supabase
     .from("employees")
-    .select("email, active, created_at")
+    .select("email, active")
     .eq("id", input.id)
     .maybeSingle();
 
@@ -211,7 +211,6 @@ export async function updateEmployee(input: UpdateEmployeeInput): Promise<Action
         role: input.role,
         rate_cents: Math.round(input.rateEuros * 100),
         active: current.active,
-        created_at: current.created_at,
         logs_hours: input.role === "chef" ? input.logsHours : false,
       });
       if (linkError) return { error: linkError.message };
