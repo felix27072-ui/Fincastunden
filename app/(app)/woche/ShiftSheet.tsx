@@ -84,6 +84,7 @@ export default function ShiftSheet({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          disabled={shift.paid}
           className={inputClass}
         />
       </Field>
@@ -93,6 +94,7 @@ export default function ShiftSheet({
             type="time"
             value={start}
             onChange={(e) => setStart(e.target.value)}
+            disabled={shift.paid}
             className={inputClass}
           />
         </Field>
@@ -101,6 +103,7 @@ export default function ShiftSheet({
             type="time"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
+            disabled={shift.paid}
             className={inputClass}
           />
         </Field>
@@ -110,6 +113,7 @@ export default function ShiftSheet({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="z. B. Küche, Theke"
+          disabled={shift.paid}
           className={inputClass}
         />
       </Field>
@@ -124,23 +128,31 @@ export default function ShiftSheet({
         </div>
       </div>
       {shift.paid && (
-        <div className="mt-2.5 text-xs text-verde">
+        <div className="mt-2.5 border border-verde/40 bg-verde/10 p-2.5 text-xs text-verde">
           {shift.paid_on ? `Am ${dLabel(shift.paid_on)} ausbezahlt.` : "Bereits ausbezahlt."}{" "}
-          Änderungen werden protokolliert.
+          Diese Schicht ist nach der Auszahlung gesperrt und kann nicht mehr geändert oder gelöscht werden.
         </div>
       )}
 
       {error && <p className="mt-3 text-sm text-naranja-dark">{error}</p>}
 
       <div className="mt-4 flex gap-2">
-        <Button onClick={submit} disabled={isPending} className="flex-1">
-          Speichern
-        </Button>
-        <Button variant="outline" onClick={onClose} disabled={isPending} type="button">
-          Abbrechen
+        {!shift.paid && (
+          <Button onClick={submit} disabled={isPending} className="flex-1">
+            Speichern
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          onClick={onClose}
+          disabled={isPending}
+          type="button"
+          className={shift.paid ? "w-full" : ""}
+        >
+          {shift.paid ? "Schließen" : "Abbrechen"}
         </Button>
       </div>
-      {!isNew && (
+      {!isNew && !shift.paid && (
         <Button
           variant="outline-warn"
           onClick={remove}
