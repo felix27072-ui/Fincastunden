@@ -10,7 +10,7 @@ import type { Role } from "@/lib/database.types";
 // Fehler (Validierung, "schon angelegt" etc.) deshalb als Rückgabewert
 // modellieren statt zu werfen, wie von Next.js empfohlen. throw bleibt nur
 // für echte Ausnahmefälle (keine Session, keine Chef-Rolle).
-export type ActionResult = { error: string | null };
+export type ActionResult = { error: string | null; message?: string };
 
 async function requireChef() {
   const supabase = await createClient();
@@ -87,6 +87,104 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Action
   revalidatePath("/woche");
   revalidatePath("/abrechnung");
   return { error: null };
+}
+
+
+export async function inviteEmployee(input: CreateEmployeeInput): Promise<ActionResult> {
+  const supabase = await requireChef();
+  const admin = createAdminClient();
+  const email = input.email.trim();
+  const name = input.name.trim();
+  const rateCents = Math.round(input.rateEuros * 100);
+
+  if (!name || !email || !Number.isFinite(rateCents) || rateCents < 0) {
+    return { error: "Bitte Name, E-Mail und einen gültigen Stundensatz angeben." };
+  }
+
+  // Einladungen sollen immer in die echte App führen, auch wenn die Action
+  // einmal aus einer Vercel-Preview aufgerufen wird.
+  const productionHost =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() || "fincastunden.vercel.app";
+  const redirectTo = `https://${productionHost}/woche`;
+
+  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+    data: { name },
+    redirectTo,
+  });
+
+  let userId: string;
+  let invitationSent = false;
+
+  if (inviteError || !invited.user) {
+    const message = inviteError?.message.toLowerCase() ?? "";
+    const alreadyRegistered = message.includes("already") || message.includes("registered");
+
+    if (!alreadyRegistered) {
+      if (message.includes("rate limit")) {
+        return {
+          error:
+            "Die Einladung konnte wegen des E-Mail-Limits gerade nicht verschickt werden. Bitte später erneut versuchen oder den Mitarbeiter direkt anlegen.",
+        };
+      }
+      return { error: inviteError?.message ?? "Einladung konnte nicht erstellt werden." };
+    }
+
+    // Falls die Person vorher schon Google ausprobiert hat, existiert der
+    // Auth-Nutzer bereits. Dann wird nur noch der Mitarbeiter-Datensatz
+    // verknüpft; die Person kann sich direkt mit Google oder Magic Link anmelden.
+    const { data: list, error: listError } = await admin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+    const existing = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    if (listError || !existing) {
+      return {
+        error: "Für diese E-Mail existiert bereits ein Login, er konnte aber nicht gefunden werden.",
+      };
+    }
+
+    const { data: linkedEmployee, error: linkedError } = await admin
+      .from("employees")
+      .select("id")
+      .eq("id", existing.id)
+      .maybeSingle();
+    if (linkedError) return { error: linkedError.message };
+    if (linkedEmployee) {
+      return { error: "Diese E-Mail-Adresse ist bereits als Mitarbeiter angelegt." };
+    }
+    userId = existing.id;
+  } else {
+    userId = invited.user.id;
+    invitationSent = true;
+  }
+
+  const { error: insertError } = await supabase.from("employees").insert({
+    id: userId,
+    name,
+    email,
+    role: input.role,
+    rate_cents: rateCents,
+  });
+
+  if (insertError) {
+    // Eine gerade erzeugte Einladung wieder vollständig zurückrollen, damit
+    // kein verwaister Auth-Account ohne Mitarbeiterdatensatz übrig bleibt.
+    if (invitationSent) {
+      await admin.auth.admin.deleteUser(userId);
+    }
+    return { error: insertError.message };
+  }
+
+  revalidatePath("/team");
+  revalidatePath("/woche");
+  revalidatePath("/abrechnung");
+
+  return {
+    error: null,
+    message: invitationSent
+      ? `Einladung an ${email} wurde verschickt. Der Link ist nur für dieses Konto gedacht; danach ist auch die Anmeldung mit Google über dieselbe E-Mail möglich.`
+      : `${name} wurde mit dem bereits vorhandenen Login verknüpft und kann sich direkt anmelden.`,
+  };
 }
 
 export type EmployeeListItem = {

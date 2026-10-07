@@ -145,6 +145,14 @@ export default function AbrechnungClient({
         >
           Alle Stundenzettel exportieren
         </a>
+        {canPayout && (
+          <a
+            href="/abrechnung/backup"
+            className="mt-2 block w-full border border-line bg-transparent px-4 py-3 text-center text-sm font-semibold text-crema"
+          >
+            Komplettes Backup herunterladen (.zip)
+          </a>
+        )}
       </div>
 
       {payouts.length > 0 && (

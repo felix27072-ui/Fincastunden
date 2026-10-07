@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Field, { inputClass } from "@/components/ui/Field";
 import Button from "@/components/ui/Button";
 import { eur } from "@/lib/format";
-import { createEmployee, setEmployeeActive, type EmployeeListItem } from "./actions";
+import { createEmployee, inviteEmployee, setEmployeeActive, type EmployeeListItem } from "./actions";
 import EditEmployeeSheet from "./EditEmployeeSheet";
 import type { Role } from "@/lib/database.types";
 
@@ -25,7 +25,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [editing, setEditing] = useState<EmployeeListItem | null>(null);
 
-  function submit() {
+  function submit(mode: "invite" | "direct") {
     setError("");
     setSuccess("");
     const rateEuros = Number(rate.replace(",", "."));
@@ -34,12 +34,19 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
       return;
     }
     startTransition(async () => {
-      const result = await createEmployee({ name, email, role, rateEuros });
+      const input = { name, email, role, rateEuros };
+      const result =
+        mode === "invite" ? await inviteEmployee(input) : await createEmployee(input);
       if (result.error) {
         setError(result.error);
         return;
       }
-      setSuccess(`${name} wurde angelegt. Kann sich ab sofort einloggen.`);
+      setSuccess(
+        result.message ??
+          (mode === "invite"
+            ? `Einladung an ${email} wurde verschickt.`
+            : `${name} wurde angelegt und kann sich ab sofort einloggen.`)
+      );
       setName("");
       setEmail("");
       setRole("mitarbeiter");
@@ -98,9 +105,23 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
         {error && <p className="mt-1 text-sm text-naranja-dark">{error}</p>}
         {success && <p className="mt-1 text-sm text-verde">{success}</p>}
 
-        <Button onClick={submit} disabled={isPending} className="mt-2 w-full">
-          {isPending ? "Wird angelegt …" : "Anlegen"}
-        </Button>
+        <p className="mt-1 text-xs leading-relaxed text-muted">
+          Empfehlung: Einladung senden. Die Person erhält einen einmaligen Registrierungslink und
+          kann danach auch Google mit derselben E-Mail-Adresse nutzen.
+        </p>
+        <div className="mt-2 flex gap-2">
+          <Button onClick={() => submit("invite")} disabled={isPending} className="flex-1">
+            {isPending ? "Bitte warten …" : "Einladung senden"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => submit("direct")}
+            disabled={isPending}
+            className="flex-1"
+          >
+            Direkt anlegen
+          </Button>
+        </div>
       </div>
 
       <div className="mt-5">
