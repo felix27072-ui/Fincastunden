@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  applicationName: "la Finca",
   title: "la Finca · Stunden",
   description: "Digitaler Stundenzettel für Restaurant la Finca, Freiburg.",
   manifest: "/manifest.webmanifest",
