@@ -2,11 +2,17 @@
   "name": "la Finca · Stunden",
   "short_name": "la Finca",
   "description": "Digitaler Stundenzettel für Restaurant la Finca, Freiburg.",
+  "id": "/",
   "start_url": "/woche",
+  "scope": "/",
+  "lang": "de",
   "display": "standalone",
-  "background_color": "#1c1917",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#e07c24",
   "theme_color": "#e07c24",
   "orientation": "portrait",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/logo.png",
