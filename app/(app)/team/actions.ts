@@ -41,7 +41,7 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Action
   const supabase = await requireChef();
   const admin = createAdminClient();
   const email = input.email.trim();
-  if (!input.temporaryPassword || input.temporaryPassword.length < 12) return { error: "Vorläufiges Passwort: mindestens 12 Zeichen." };
+  if (!input.temporaryPassword || input.temporaryPassword.length < 8) return { error: "Vorläufiges Passwort: mindestens 8 Zeichen." };
 
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
@@ -372,7 +372,7 @@ export async function updateEmployee(input: UpdateEmployeeInput): Promise<Action
 
 export async function resetEmployeePassword(id: string, temporaryPassword: string): Promise<ActionResult> {
   const supabase = await requireChef();
-  if (temporaryPassword.length < 12) return { error: "Mindestens 12 Zeichen erforderlich." };
+  if (temporaryPassword.length < 8) return { error: "Mindestens 8 Zeichen erforderlich." };
   const { data: employee, error: lookupError } = await supabase.from("employees").select("id").eq("id", id).maybeSingle();
   if (lookupError || !employee) return { error: "Mitarbeiter nicht gefunden." };
   const admin = createAdminClient();
