@@ -30,8 +30,8 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
     setError("");
     setSuccess("");
     const rateEuros = Number(rate.replace(",", "."));
-    if (!name.trim() || !email.trim() || Number.isNaN(rateEuros) || (mode === "direct" && temporaryPassword.length < 8)) {
-      setError("Bitte Name, E-Mail, Stundensatz und ein vorläufiges Passwort mit mindestens 8 Zeichen angeben.");
+    if (!name.trim() || !email.trim() || Number.isNaN(rateEuros) || (mode === "direct" && !temporaryPassword)) {
+      setError("Bitte Name, E-Mail, Stundensatz und ein vorläufiges Passwort  angeben.");
       return;
     }
     startTransition(async () => {
@@ -104,7 +104,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
           </Field>
         </div>
 
-        <Field label="Vorläufiges Passwort (mindestens 8 Zeichen)">
+        <Field label="Vorläufiges Passwort">
           <input type="password" autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
         </Field>
         {error && <p className="mt-1 text-sm text-naranja-dark">{error}</p>}
@@ -145,7 +145,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
                 {emp.name}
               </div>
               <div className="truncate text-xs text-muted">
-                {emp.email} · {ROLE_LABEL[emp.role]}
+                {emp.email} · {ROLE_LABEL[emp.role]}{emp.password_change_pending ? " · Passwortwechsel ausstehend" : ""}
                 {emp.role !== "steuer" && ` · ${eur(emp.rate_cents / 100)}/h`}
                 {emp.role === "chef" && (emp.logs_hours ? " · erfasst Stunden" : " · keine eigenen Stunden")}
               </div>
