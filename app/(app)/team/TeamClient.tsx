@@ -19,6 +19,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("mitarbeiter");
   const [rate, setRate] = useState("13.90");
+  const [temporaryPassword, setTemporaryPassword] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -29,12 +30,12 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
     setError("");
     setSuccess("");
     const rateEuros = Number(rate.replace(",", "."));
-    if (!name.trim() || !email.trim() || Number.isNaN(rateEuros)) {
-      setError("Bitte Name, E-Mail und einen gültigen Stundensatz angeben.");
+    if (!name.trim() || !email.trim() || Number.isNaN(rateEuros) || (mode === "direct" && temporaryPassword.length < 12)) {
+      setError("Bitte Name, E-Mail, Stundensatz und ein vorläufiges Passwort mit mindestens 12 Zeichen angeben.");
       return;
     }
     startTransition(async () => {
-      const input = { name, email, role, rateEuros };
+      const input = { name, email, role, rateEuros, temporaryPassword };
       const result =
         mode === "invite" ? await inviteEmployee(input) : await createEmployee(input);
       if (result.error) {
@@ -51,6 +52,7 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
       setEmail("");
       setRole("mitarbeiter");
       setRate("13.90");
+      setTemporaryPassword("");
     });
   }
 
@@ -102,24 +104,25 @@ export default function TeamClient({ employees }: { employees: EmployeeListItem[
           </Field>
         </div>
 
+        <Field label="Vorläufiges Passwort (mindestens 12 Zeichen)">
+          <input type="password" autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
+        </Field>
         {error && <p className="mt-1 text-sm text-naranja-dark">{error}</p>}
         {success && <p className="mt-1 text-sm text-verde">{success}</p>}
 
         <p className="mt-1 text-xs leading-relaxed text-muted">
-          Empfehlung: Einladung senden. Die Person erhält einen einmaligen Registrierungslink und
-          kann danach auch Google mit derselben E-Mail-Adresse nutzen.
+          Standard: Vorläufiges Passwort vergeben und direkt anlegen. Die Person muss es beim ersten Login ändern.
         </p>
         <div className="mt-2 flex gap-2">
           <Button onClick={() => submit("invite")} disabled={isPending} className="flex-1">
-            {isPending ? "Bitte warten …" : "Einladung senden"}
+            {isPending ? "Bitte warten …" : "Alternativ: Einladung senden"}
           </Button>
           <Button
-            variant="outline"
             onClick={() => submit("direct")}
             disabled={isPending}
             className="flex-1"
           >
-            Direkt anlegen
+            Mit Passwort anlegen
           </Button>
         </div>
       </div>
