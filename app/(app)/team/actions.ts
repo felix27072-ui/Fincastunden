@@ -12,6 +12,15 @@ import type { Role } from "@/lib/database.types";
 // für echte Ausnahmefälle (keine Session, keine Chef-Rolle).
 export type ActionResult = { error: string | null; message?: string };
 
+function passwordError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("password") && (m.includes("short") || m.includes("length") || m.includes("characters") || m.includes("at least"))) {
+    const match = message.match(/(?:at least|minimum of|min(?:imum)? length(?: of)?|must be)\\s*(\\d+)/i) ?? message.match(/(\\d+)\\s*characters/i);
+    return match ? `Das Passwort ist zu kurz. Es muss mindestens ${match[1]} Zeichen haben.` : "Das Passwort ist zu kurz. Bitte verwende ein längeres Passwort (gegebenenfalls mindestens 8 Zeichen).";
+  }
+  return message;
+}
+
 async function requireChef() {
   const supabase = await createClient();
   const {
@@ -53,7 +62,7 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Action
   let userId: string;
   if (createError || !created.user) {
     if (!createError?.message.includes("already been registered")) {
-      return { error: createError?.message ?? "Nutzer konnte nicht angelegt werden." };
+      return { error: createError ? passwordError(createError.message) : "Nutzer konnte nicht angelegt werden." };
     }
     // E-Mail hat schon einen Auth-Nutzer, aber keine employees-Zeile — z. B.
     // weil jemand vor dem Anlegen schon "Mit Google anmelden" probiert hat.
@@ -389,5 +398,5 @@ export async function resetEmployeePassword(id: string, temporaryPassword: strin
     password: temporaryPassword,
     app_metadata: { ...existing.user.app_metadata, must_change_password: true },
   });
-  return { error: error?.message ?? null };
+  return { error: error ? passwordError(error.message) : null };
 }
