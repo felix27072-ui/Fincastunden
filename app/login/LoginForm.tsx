@@ -140,11 +140,11 @@ export default function LoginForm({ next }: { next: string }) {
 
   return (
     <div>
-      {googleButton}
+      <p className="mb-3 text-sm font-semibold text-crema">Mit E-Mail und Passwort anmelden</p>
 
       <div className="my-3 flex items-center gap-2.5 text-[11px] text-muted">
         <div className="h-px flex-1 bg-line" />
-        oder
+        Anmeldeart wählen
         <div className="h-px flex-1 bg-line" />
       </div>
 
@@ -216,6 +216,8 @@ export default function LoginForm({ next }: { next: string }) {
               : "Anmelden"}
         </button>
       </form>
+
+      <div className="mt-5 border-t border-line pt-4"><p className="mb-3 text-center text-xs text-muted">Weitere Anmeldemöglichkeiten</p>{googleButton}</div>
 
       {mode === "password" && (
         <p className="mt-2 text-xs text-muted">
