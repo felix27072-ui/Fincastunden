@@ -34,16 +34,20 @@ export type CreateEmployeeInput = {
   email: string;
   role: Role;
   rateEuros: number;
+  temporaryPassword?: string;
 };
 
 export async function createEmployee(input: CreateEmployeeInput): Promise<ActionResult> {
   const supabase = await requireChef();
   const admin = createAdminClient();
   const email = input.email.trim();
+  if (!input.temporaryPassword || input.temporaryPassword.length < 12) return { error: "Vorläufiges Passwort: mindestens 12 Zeichen." };
 
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
     email_confirm: true,
+    password: input.temporaryPassword,
+    app_metadata: { must_change_password: true },
   });
 
   let userId: string;
@@ -62,7 +66,7 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Action
     if (listError || !existing) {
       return { error: "Diese E-Mail-Adresse ist schon angelegt, aber der Nutzer wurde nicht gefunden." };
     }
-    userId = existing.id;
+    return { error: "Für diese E-Mail existiert bereits ein Login. Bitte nutze die Passwort-Zurücksetzung." };
   } else {
     userId = created.user.id;
   }
@@ -363,4 +367,20 @@ export async function updateEmployee(input: UpdateEmployeeInput): Promise<Action
   revalidatePath("/abrechnung");
   revalidatePath("/meine");
   return { error: null };
+}
+
+
+export async function resetEmployeePassword(id: string, temporaryPassword: string): Promise<ActionResult> {
+  const supabase = await requireChef();
+  if (temporaryPassword.length < 12) return { error: "Mindestens 12 Zeichen erforderlich." };
+  const { data: employee, error: lookupError } = await supabase.from("employees").select("id").eq("id", id).maybeSingle();
+  if (lookupError || !employee) return { error: "Mitarbeiter nicht gefunden." };
+  const admin = createAdminClient();
+  const { data: existing, error: getError } = await admin.auth.admin.getUserById(id);
+  if (getError || !existing.user) return { error: "Anmeldekonto nicht gefunden." };
+  const { error } = await admin.auth.admin.updateUserById(id, {
+    password: temporaryPassword,
+    app_metadata: { ...existing.user.app_metadata, must_change_password: true },
+  });
+  return { error: error?.message ?? null };
 }
