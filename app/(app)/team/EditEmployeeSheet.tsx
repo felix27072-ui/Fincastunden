@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Sheet from "@/components/ui/Sheet";
 import Field, { inputClass } from "@/components/ui/Field";
 import Button from "@/components/ui/Button";
-import { updateEmployee, type EmployeeListItem } from "./actions";
+import { updateEmployee, resetEmployeePassword, type EmployeeListItem } from "./actions";
 import type { Role } from "@/lib/database.types";
 
 export default function EditEmployeeSheet({
@@ -23,6 +23,8 @@ export default function EditEmployeeSheet({
   const [logsHours, setLogsHours] = useState(employee.logs_hours);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [temporaryPassword, setTemporaryPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
 
   function submit() {
     setError("");
@@ -92,6 +94,18 @@ export default function EditEmployeeSheet({
         </label>
       )}
 
+      <Field label="Neues vorläufiges Passwort (mindestens 12 Zeichen)">
+        <input type="password" autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
+      </Field>
+      <Button variant="outline" disabled={isPending || temporaryPassword.length < 12} onClick={() => {
+        setError(""); setPasswordMessage("");
+        startTransition(async () => {
+          const result = await resetEmployeePassword(employee.id, temporaryPassword);
+          if (result.error) setError(result.error);
+          else { setTemporaryPassword(""); setPasswordMessage("Vorläufiges Passwort gesetzt. Beim nächsten Login muss es geändert werden."); }
+        });
+      }}>Passwort zurücksetzen</Button>
+      {passwordMessage && <p className="mb-2 text-sm text-verde">{passwordMessage}</p>}
       {error && <p className="mb-2 text-sm text-naranja-dark">{error}</p>}
 
       <div className="mt-2 flex gap-2">
