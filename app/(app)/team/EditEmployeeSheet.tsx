@@ -94,10 +94,10 @@ export default function EditEmployeeSheet({
         </label>
       )}
 
-      <Field label="Neues vorläufiges Passwort (mindestens 12 Zeichen)">
+      <Field label="Neues vorläufiges Passwort (mindestens 8 Zeichen)">
         <input type="password" autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
       </Field>
-      <Button variant="outline" disabled={isPending || temporaryPassword.length < 12} onClick={() => {
+      <Button variant="outline" disabled={isPending || temporaryPassword.length < 8} onClick={() => {
         setError(""); setPasswordMessage("");
         startTransition(async () => {
           const result = await resetEmployeePassword(employee.id, temporaryPassword);
