@@ -25,6 +25,8 @@ export default function EditEmployeeSheet({
   const [error, setError] = useState("");
   const [temporaryPassword, setTemporaryPassword] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [issuedPassword, setIssuedPassword] = useState("");
 
   function submit() {
     setError("");
@@ -94,18 +96,26 @@ export default function EditEmployeeSheet({
         </label>
       )}
 
-      <Field label="Neues vorläufiges Passwort (mindestens 8 Zeichen)">
-        <input type="password" autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
+      <p className="mb-2 text-sm text-muted">Passwortstatus: {passwordMessage ? "Vorläufiges Passwort vergeben – Änderung ausstehend" : employee.password_change_pending ? "Vorläufiges Passwort vergeben – Änderung ausstehend" : "Keine Passwortänderung ausstehend"}</p>
+      <Field label="Neues vorläufiges Passwort">
+        <div className="flex gap-2">
+          <input type={showPassword ? "text" : "password"} autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
+          <button type="button" className="border border-line px-3 text-sm" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Verbergen" : "Anzeigen"}</button>
+        </div>
       </Field>
-      <Button variant="outline" disabled={isPending || temporaryPassword.length < 8} onClick={() => {
-        setError(""); setPasswordMessage("");
+      <Button variant="outline" disabled={isPending || !temporaryPassword} onClick={() => {
+        setError(""); setPasswordMessage(""); setIssuedPassword("");
+        const chosenPassword = temporaryPassword;
         startTransition(async () => {
-          const result = await resetEmployeePassword(employee.id, temporaryPassword);
-          if (result.error) setError(result.error);
-          else { setTemporaryPassword(""); setPasswordMessage("Vorläufiges Passwort gesetzt. Beim nächsten Login muss es geändert werden."); }
+          try {
+            const result = await resetEmployeePassword(employee.id, chosenPassword);
+            if (result.error) setError(result.error);
+            else { setTemporaryPassword(""); setIssuedPassword(chosenPassword); setPasswordMessage("Vorläufiges Passwort erfolgreich gesetzt. Beim nächsten Login muss es geändert werden."); }
+          } catch { setError("Passwort konnte nicht gesetzt werden. Bitte erneut versuchen."); }
         });
-      }}>Passwort zurücksetzen</Button>
+      }}>Vorläufiges Passwort vergeben</Button>
       {passwordMessage && <p className="mb-2 text-sm text-verde">{passwordMessage}</p>}
+      {issuedPassword && <div className="mb-3 text-sm"><p>Gerade vergebenes Passwort: <strong>{showPassword ? issuedPassword : "••••••••"}</strong></p><div className="mt-2 flex gap-2"><button type="button" className="border border-line px-3 py-2" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Verbergen" : "Anzeigen"}</button><button type="button" className="border border-line px-3 py-2" onClick={() => navigator.clipboard.writeText(issuedPassword)}>Kopieren</button></div><p className="mt-1 text-xs text-muted">Nur jetzt sichtbar. Nach dem Schließen nicht mehr abrufbar.</p></div>}
       {error && <p className="mb-2 text-sm text-naranja-dark">{error}</p>}
 
       <div className="mt-2 flex gap-2">
