@@ -96,7 +96,7 @@ export default function EditEmployeeSheet({
         </label>
       )}
 
-      <p className="mb-2 text-sm text-muted">Passwortstatus: {passwordMessage ? "Vorläufiges Passwort vergeben – Änderung ausstehend" : employee.password_change_pending ? "Vorläufiges Passwort vergeben – Änderung ausstehend" : "Keine Passwortänderung ausstehend"}</p>
+      <p className="mb-2 text-sm text-muted">Vorläufiges Passwort: {passwordMessage ? "Vorläufiges Passwort vergeben – Änderung ausstehend" : employee.password_change_pending ? "Vorläufiges Passwort vergeben – Änderung ausstehend" : "Kein vorläufiges Passwort bestätigt – bitte eines vergeben"}</p>
       <Field label="Neues vorläufiges Passwort">
         <div className="flex gap-2">
           <input type={showPassword ? "text" : "password"} autoComplete="new-password" value={temporaryPassword} onChange={(e) => setTemporaryPassword(e.target.value)} className={inputClass} />
