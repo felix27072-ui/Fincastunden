@@ -21,10 +21,10 @@ async function requireChef() {
 
   const { data: me } = await supabase
     .from("employees")
-    .select("role")
+    .select("role, active")
     .eq("id", user.id)
     .maybeSingle();
-  if (me?.role !== "chef") throw new Error("Nur der Chef kann Mitarbeiter verwalten.");
+  if (me?.role !== "chef" || !me.active) throw new Error("Nur der Chef kann Mitarbeiter verwalten.");
 
   return supabase;
 }
