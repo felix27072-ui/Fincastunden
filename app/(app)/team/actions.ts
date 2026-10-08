@@ -13,6 +13,13 @@ import type { Role } from "@/lib/database.types";
 export type ActionResult = { error: string | null; message?: string };
 
 function passwordError(message: string): string {
+  const lengthMatch = message.match(/(?:at least|minimum|min length|shorter than)\\D*(\\d+)/i);
+  if (lengthMatch) return `Das Passwort ist zu kurz. Supabase verlangt mindestens ${lengthMatch[1]} Zeichen.`;
+  if (/weak.password|password.*(short|length)|password.*characters/i.test(message)) return "Das Passwort erfüllt die Sicherheitsvorgaben von Supabase nicht. Bitte mindestens 6 Zeichen verwenden und gegebenenfalls Buchstaben und Zahlen kombinieren.";
+  return message;
+}
+
+function passwordError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("password") && (m.includes("short") || m.includes("length") || m.includes("characters") || m.includes("at least"))) {
     const match = message.match(/(?:at least|minimum of|min(?:imum)? length(?: of)?|must be)\\s*(\\d+)/i) ?? message.match(/(\\d+)\\s*characters/i);
