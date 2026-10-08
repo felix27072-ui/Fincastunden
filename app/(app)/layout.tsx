@@ -7,6 +7,10 @@ import Tabs from "@/components/Tabs";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const me = await getCurrentEmployee();
   if (!me) redirect("/auth/no-access");
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user?.app_metadata?.must_change_password) redirect("/passwort-wechsel");
   const reminder = await getReminderBanner(me.id, me.role);
 
   return (
