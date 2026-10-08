@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function finishPasswordChange(password: string): Promise<{ error: string | null }> {
-  if (password.length < 12) return { error: "Mindestens 12 Zeichen erforderlich." };
+  if (password.length < 8) return { error: "Mindestens 8 Zeichen erforderlich." };
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return { error: "Bitte erneut anmelden." };
