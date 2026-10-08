@@ -41,7 +41,7 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Action
   const supabase = await requireChef();
   const admin = createAdminClient();
   const email = input.email.trim();
-  if (!input.temporaryPassword || input.temporaryPassword.length < 8) return { error: "Vorläufiges Passwort: mindestens 8 Zeichen." };
+  if (!input.temporaryPassword) return { error: "Bitte ein vorläufiges Passwort eingeben." };
 
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
@@ -199,6 +199,7 @@ export type EmployeeListItem = {
   active: boolean;
   rate_cents: number;
   logs_hours: boolean;
+  password_change_pending: boolean;
 };
 
 export async function getEmployees(): Promise<EmployeeListItem[]> {
@@ -207,7 +208,13 @@ export async function getEmployees(): Promise<EmployeeListItem[]> {
     .from("employees")
     .select("id, name, email, role, active, rate_cents, logs_hours")
     .order("name");
-  return data ?? [];
+  if (!data) return [];
+  const admin = createAdminClient();
+  const statuses = await Promise.all(data.map(async (employee) => {
+    const { data: authData } = await admin.auth.admin.getUserById(employee.id);
+    return { ...employee, password_change_pending: authData.user?.app_metadata?.must_change_password === true };
+  }));
+  return statuses;
 }
 
 export async function setEmployeeActive(id: string, active: boolean): Promise<ActionResult> {
@@ -372,7 +379,7 @@ export async function updateEmployee(input: UpdateEmployeeInput): Promise<Action
 
 export async function resetEmployeePassword(id: string, temporaryPassword: string): Promise<ActionResult> {
   const supabase = await requireChef();
-  if (temporaryPassword.length < 8) return { error: "Mindestens 8 Zeichen erforderlich." };
+  if (!temporaryPassword) return { error: "Bitte ein vorläufiges Passwort eingeben." };
   const { data: employee, error: lookupError } = await supabase.from("employees").select("id").eq("id", id).maybeSingle();
   if (lookupError || !employee) return { error: "Mitarbeiter nicht gefunden." };
   const admin = createAdminClient();
