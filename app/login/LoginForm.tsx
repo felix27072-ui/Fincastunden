@@ -20,7 +20,7 @@ function friendlyError(message: string): string {
 }
 
 export default function LoginForm({ next }: { next: string }) {
-  const [mode, setMode] = useState<Mode>("link");
+  const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -219,7 +219,7 @@ export default function LoginForm({ next }: { next: string }) {
 
       {mode === "password" && (
         <p className="mt-2 text-xs text-muted">
-          Noch kein Passwort? Einmal per Google oder Anmeldelink einloggen und dort unter
+          Noch kein Passwort? Bitte die verantwortliche Person um ein vorläufiges Passwort bitten oder per Google oder Anmeldelink einloggen und dort unter
           „Passwort&quot; eins festlegen.
         </p>
       )}
