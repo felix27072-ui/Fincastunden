@@ -16,7 +16,7 @@ export default function TopBar({ name, role }: { name: string; role: Role }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <header className="rounded-b-2xl border-b border-white/10 bg-naranja px-4 pb-4 pt-[max(0.875rem,env(safe-area-inset-top))] shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+    <header className="rounded-b-2xl border-b border-white/10 bg-naranja px-4 pb-4 pt-[max(0.875rem,env(safe-area-inset-top))] shadow-[0_8px_24px_rgba(0,0,0,0.12)] sm:px-6 lg:flex lg:items-center lg:justify-between lg:gap-6 lg:rounded-b-xl lg:py-4">
       <div className="flex items-center gap-3">
         <Image src="/logo.png" alt="la Finca" width={48} height={48} className="shrink-0 rounded-lg" />
         <div className="min-w-0 flex-1">
@@ -25,7 +25,7 @@ export default function TopBar({ name, role }: { name: string; role: Role }) {
           <div className="truncate text-[11px] text-white/80">{ROLE_LABEL[role]}</div>
         </div>
       </div>
-      <div className="mt-3 flex gap-2 pl-[60px]">
+      <div className="mt-3 flex gap-2 pl-[60px] lg:mt-0 lg:min-w-[270px] lg:pl-0">
         <button
           type="button"
           onClick={() => setShowPassword(true)}
