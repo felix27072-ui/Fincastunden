@@ -14,9 +14,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const reminder = await getReminderBanner(me.id, me.role);
 
   return (
-    <div className="mx-auto w-full max-w-[620px] flex-1 pb-16">
+    <div className="mx-auto w-full max-w-[680px] lg:max-w-[1120px] flex-1 pb-16">
       <TopBar name={me.name} role={me.role} />
-      <div className="px-3">
+      <div className="px-4 sm:px-6">
         <Tabs
           items={[
             { href: "/woche", label: "Woche" },
@@ -30,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ]}
         />
         {reminder && (
-          <div className="mt-3 border border-naranja-dark bg-surface p-3 text-sm text-crema">
+          <div className="mt-4 rounded-xl border border-naranja-dark bg-surface p-4 text-sm leading-relaxed text-crema">
             {reminder}
           </div>
         )}
