@@ -101,7 +101,8 @@ export default function AbrechnungClient({
 
   return (
     <>
-      <div className="mt-3 border border-line bg-surface p-3.5">
+      <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,1fr)] lg:items-start">
+      <section aria-label="Monatsabrechnung" className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
         {staff.map((emp) => {
           const rows = monthShifts.filter((s) => s.employee_id === emp.id);
           const monthHours = rows.reduce((n, s) => n + s.hours, 0);
@@ -110,7 +111,7 @@ export default function AbrechnungClient({
           return (
             <div
               key={emp.id}
-              className="flex items-center justify-between gap-2 border-b border-line py-2.5"
+              className="flex items-center justify-between gap-3 border-b border-line py-3"
             >
               <div className="min-w-0">
                 <div className="text-[15px]">{emp.name}</div>
@@ -141,19 +142,20 @@ export default function AbrechnungClient({
         </Button>
         <a
           href="/abrechnung/export-stundenzettel"
-          className="mt-2 block w-full border border-crema bg-transparent px-4 py-3 text-center text-sm font-semibold text-crema"
+          className="mt-2 block w-full rounded-xl border border-line bg-carbon px-4 py-3 text-center text-sm font-semibold text-crema transition-colors hover:border-muted"
         >
           Alle Stundenzettel exportieren
         </a>
         {canPayout && (
           <a
             href="/abrechnung/backup"
-            className="mt-2 block w-full border border-line bg-transparent px-4 py-3 text-center text-sm font-semibold text-crema"
+            className="mt-2 block w-full rounded-xl border border-line bg-carbon px-4 py-3 text-center text-sm font-semibold text-crema transition-colors hover:border-muted"
           >
             Komplettes Backup herunterladen (.zip)
           </a>
         )}
-      </div>
+      </section>
+      <div className="min-w-0 space-y-5">
 
       {payouts.length > 0 && (
         <div className="mt-5">
@@ -195,6 +197,9 @@ export default function AbrechnungClient({
           />
         ))}
         {!monthShifts.length && <p className="pt-2 text-sm text-muted">Für diesen Monat nichts eingetragen.</p>}
+      </div>
+
+      </div>
       </div>
 
       <Button variant="outline" onClick={toggleLog} className="mt-[18px] w-full !text-xs">
