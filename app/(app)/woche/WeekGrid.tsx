@@ -83,17 +83,17 @@ export default function WeekGrid({
     setHistory([]);
   }
 
-  const gridCols = { gridTemplateColumns: `58px repeat(${days.length}, minmax(0, 1fr))` };
+  const gridCols = { gridTemplateColumns: `clamp(58px, 16vw, 180px) repeat(${days.length}, minmax(0, 1fr))` };
 
   return (
     <>
-      <div className="mt-3 border border-line">
+      <div className="mt-4 overflow-hidden rounded-xl border border-line bg-surface/40">
         <div className="grid bg-naranja" style={gridCols}>
-          <div className="self-center px-1.5 py-1.5 text-[10px] font-bold tracking-[0.1em] text-white">
+          <div className="self-center px-2 py-3 text-[10px] sm:px-4 sm:text-xs font-bold tracking-[0.1em] text-white">
             NAME
           </div>
           {days.map((iso) => (
-            <div key={iso} className="border-l border-white/25 px-0.5 py-1.5 text-center">
+            <div key={iso} className="border-l border-white/25 px-0.5 py-3 text-center">
               <div className="text-xs font-bold text-white">{weekdayLabel(iso)}</div>
               <div className="tabular-nums text-[9px] text-white/85">{dShort(iso)}</div>
             </div>
@@ -111,11 +111,11 @@ export default function WeekGrid({
               className={`grid border-t border-line ${emp.id === me.id ? "bg-naranja/10" : ""}`}
               style={gridCols}
             >
-              <div className="self-center overflow-hidden px-1.5 py-2">
+              <div className="self-center overflow-hidden px-1.5 py-2 sm:px-4 sm:py-3">
                 <div
-                  className={`truncate text-xs ${emp.id === me.id ? "font-bold" : "font-medium"}`}
+                  className={`truncate text-xs sm:text-sm ${emp.id === me.id ? "font-bold" : "font-medium"}`}
                 >
-                  {emp.name.split(" ")[0]}
+                  <span className="sm:hidden">{emp.name.split(" ")[0]}</span><span className="hidden sm:inline">{emp.name}</span>
                 </div>
                 <div className="tabular-nums text-[10px] text-muted">
                   {rowHours ? `${hrs(rowHours)} h` : "—"}
@@ -131,19 +131,19 @@ export default function WeekGrid({
                     key={iso}
                     type="button"
                     onClick={() => openDay(emp, iso)}
-                    className={`week-cell min-h-[48px] border-l border-line px-px py-2 text-center text-crema ${
+                    className={`week-cell min-h-[54px] border-l border-line px-px py-2 text-center text-crema transition-colors hover:bg-naranja/10 sm:min-h-[70px] sm:py-3 ${
                       editable ? "cursor-pointer" : "cursor-default"
                     }`}
                   >
                     {h > 0 ? (
                       <>
                         <div
-                          className="tabular-nums text-[15px] font-bold"
+                          className="tabular-nums text-[15px] font-bold sm:text-lg"
                           style={{ color: open ? "var(--color-naranja)" : "var(--color-verde)" }}
                         >
                           {hrs(h)}
                         </div>
-                        <div className="week-cell-times tabular-nums text-[9px] leading-tight text-muted">
+                        <div className="week-cell-times tabular-nums text-[9px] sm:text-[11px] leading-tight text-muted">
                           {list[0].start_time.slice(0, 5)}–{list[list.length - 1].end_time.slice(0, 5)}
                         </div>
                       </>
