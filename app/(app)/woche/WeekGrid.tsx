@@ -83,13 +83,13 @@ export default function WeekGrid({
     setHistory([]);
   }
 
-  const gridCols = { gridTemplateColumns: `clamp(58px, 16vw, 180px) repeat(${days.length}, minmax(0, 1fr))` };
+  const gridCols = { gridTemplateColumns: `clamp(90px, 20vw, 180px) repeat(${days.length}, minmax(88px, 1fr))` };
 
   return (
     <>
-      <div className="mt-4 overflow-hidden rounded-xl border border-line bg-surface/40">
-        <div className="grid bg-naranja" style={gridCols}>
-          <div className="self-center px-2 py-3 text-[10px] sm:px-4 sm:text-xs font-bold tracking-[0.1em] text-white">
+      <div className="mt-4 overflow-x-auto rounded-xl border border-line bg-surface/40">\n        <div className="min-w-[740px] lg:min-w-0">
+        <div className="sticky top-0 z-10 grid bg-naranja" style={gridCols}>
+          <div className="sticky left-0 z-20 self-center bg-naranja px-2 py-3 text-[10px] sm:px-4 sm:text-xs font-bold tracking-[0.1em] text-white">
             NAME
           </div>
           {days.map((iso) => (
@@ -111,11 +111,11 @@ export default function WeekGrid({
               className={`grid border-t border-line ${emp.id === me.id ? "bg-naranja/10" : ""}`}
               style={gridCols}
             >
-              <div className="self-center overflow-hidden px-1.5 py-2 sm:px-4 sm:py-3">
+              <div className="sticky left-0 z-10 self-center overflow-hidden bg-surface px-1.5 py-2 sm:px-4 sm:py-3">
                 <div
                   className={`truncate text-xs sm:text-sm ${emp.id === me.id ? "font-bold" : "font-medium"}`}
                 >
-                  <span className="sm:hidden">{emp.name.split(" ")[0]}</span><span className="hidden sm:inline">{emp.name}</span>
+                  {emp.name}
                 </div>
                 <div className="tabular-nums text-[10px] text-muted">
                   {rowHours ? `${hrs(rowHours)} h` : "—"}
