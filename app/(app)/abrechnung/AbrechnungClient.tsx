@@ -97,8 +97,7 @@ export default function AbrechnungClient({
     });
     download(
       `Stunden_LaFinca_${mk}.csv`,
-      "﻿" + [head, ...rows].map((r) => r.join(";")).join("\r
-"),
+      "\uFEFF" + [head, ...rows].map((r) => r.join(";")).join(String.fromCharCode(13, 10)),
       "text/csv;charset=utf-8;"
     );
   }
