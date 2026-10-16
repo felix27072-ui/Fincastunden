@@ -44,7 +44,7 @@ export default function AbrechnungClient({
     return (id: string) => map.get(id) ?? "—";
   }, [staff]);
 
-  const monthTotalCents = monthShifts.reduce((n, s) => n + (s.amount_cents ?? 0), 0);
+  const monthTotalCents = monthShifts.reduce((n, s) => n + (s.amount_cents ?? 0), 0);\n  const monthHours = monthShifts.reduce((n, s) => n + s.hours, 0);\n  const monthOpenCents = monthShifts.filter((s) => !s.paid).reduce((n, s) => n + (s.amount_cents ?? 0), 0);\n  const monthPaidCents = monthShifts.filter((s) => s.paid).reduce((n, s) => n + (s.amount_cents ?? 0), 0);
 
   async function openPayout(emp: Staff) {
     setLoadingPayoutFor(emp.id);
