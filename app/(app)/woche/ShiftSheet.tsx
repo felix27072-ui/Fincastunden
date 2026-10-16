@@ -36,8 +36,8 @@ export default function ShiftSheet({
   onSaved: () => void;
 }) {
   const [date, setDate] = useState(shift.work_date);
-  const [start, setStart] = useState(toHM(shift.start_time));
-  const [end, setEnd] = useState(toHM(shift.end_time));
+  const [start, setStart] = useState(() => { if (!isNew || typeof window === "undefined") return toHM(shift.start_time); try { return sessionStorage.getItem("finca-last-start") || toHM(shift.start_time); } catch { return toHM(shift.start_time); } });
+  const [end, setEnd] = useState(() => { if (!isNew || typeof window === "undefined") return toHM(shift.end_time); try { return sessionStorage.getItem("finca-last-end") || toHM(shift.end_time); } catch { return toHM(shift.end_time); } });
   const [note, setNote] = useState(shift.note ?? "");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -88,7 +88,7 @@ export default function ShiftSheet({
           className={inputClass}
         />
       </Field>
-      <div className="flex gap-2.5">
+      {isNew && <p className="mb-2 text-xs text-muted">Die letzten verwendeten Uhrzeiten werden auf diesem Gerät vorgeschlagen.</p>}\n      <div className="flex gap-2.5">
         <Field label="Von">
           <input
             type="time"
@@ -118,7 +118,7 @@ export default function ShiftSheet({
         />
       </Field>
 
-      <div className="border border-line bg-carbon p-3">
+      <div className="rounded-xl border border-line bg-carbon p-4">
         <div className="tabular-nums text-[22px] font-bold">
           {hrs(hours)} h · {eur(amount)}
         </div>
