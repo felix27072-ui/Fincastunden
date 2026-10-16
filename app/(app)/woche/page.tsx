@@ -52,17 +52,14 @@ export default async function WochePage({
     <>
       <MonthSelect months={months} value={mk} />
 
+      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface p-2">
+        <Link aria-label="Vorherige Woche" href={(() => { const i = weeks.indexOf(monday); const previousMonth = new Date(mk + "-01T12:00:00"); previousMonth.setMonth(previousMonth.getMonth() - 1); const pm = monthKey(previousMonth.toISOString().slice(0, 10)); const pw = weeksOfMonth(pm); return i > 0 ? `/woche?month=${mk}&week=${weeks[i-1]}` : `/woche?month=${pm}&week=${pw[pw.length-1]}`; })()} className="rounded-lg border border-line px-4 py-3 text-sm font-bold" >←</Link>
+        <div className="min-w-0 text-center"><div className="text-sm font-bold">KW {isoWeek(monday)} · {dShort(days[0])} – {dShort(days[days.length - 1])}</div><Link href="/woche" className="text-xs font-semibold text-naranja">Heute / aktuelle Woche</Link></div>
+        <Link aria-label="Nächste Woche" href={(() => { const i = weeks.indexOf(monday); const nextMonth = new Date(mk + "-01T12:00:00"); nextMonth.setMonth(nextMonth.getMonth() + 1); const nm = monthKey(nextMonth.toISOString().slice(0, 10)); const nw = weeksOfMonth(nm); return i < weeks.length-1 ? `/woche?month=${mk}&week=${weeks[i+1]}` : `/woche?month=${nm}&week=${nw[0]}`; })()} className="rounded-lg border border-line px-4 py-3 text-sm font-bold">→</Link>
+      </div>
       <div className="flex gap-2 overflow-x-auto pb-1 pt-3 lg:flex-wrap">
         {weeks.map((m) => (
-          <Link
-            key={m}
-            href={`/woche?month=${mk}&week=${m}`}
-            className={`shrink-0 rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors ${
-              m === monday
-                ? "border-naranja bg-naranja text-white"
-                : "border-line text-muted"
-            }`}
-          >
+          <Link key={m} href={`/woche?month=${mk}&week=${m}`} className={`shrink-0 rounded-lg border px-3 py-2.5 text-xs font-semibold ${m === monday ? "border-naranja bg-naranja text-white" : "border-line text-muted"}`}>
             KW {isoWeek(m)} · {dShort(weekDaysInMonth(m, mk)[0])}
           </Link>
         ))}
