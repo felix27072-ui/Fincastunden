@@ -153,7 +153,8 @@ export default function AbrechnungClient({
             Komplettes Backup herunterladen (.zip)
           </a>
         )}
-      </div>
+      </section>
+      <div className="min-w-0 space-y-5">
 
       {payouts.length > 0 && (
         <div className="mt-5">
