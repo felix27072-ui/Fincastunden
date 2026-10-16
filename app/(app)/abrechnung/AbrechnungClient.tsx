@@ -198,6 +198,9 @@ export default function AbrechnungClient({
         {!monthShifts.length && <p className="pt-2 text-sm text-muted">Für diesen Monat nichts eingetragen.</p>}
       </div>
 
+      </div>
+      </div>
+
       <Button variant="outline" onClick={toggleLog} className="mt-[18px] w-full !text-xs">
         Änderungsprotokoll {showLog ? "ausblenden" : "anzeigen"}
         {log !== null ? ` (${log.length})` : ""}
