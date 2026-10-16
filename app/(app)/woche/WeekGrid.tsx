@@ -158,6 +158,7 @@ export default function WeekGrid({
             </div>
           );
         })}
+        </div>
       </div>
 
       <div className="tabular-nums mt-2.5 flex justify-between text-[13px] text-muted">
