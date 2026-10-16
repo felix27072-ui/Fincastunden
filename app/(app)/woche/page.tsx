@@ -52,12 +52,12 @@ export default async function WochePage({
     <>
       <MonthSelect months={months} value={mk} />
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1 pt-2.5">
+      <div className="flex gap-2 overflow-x-auto pb-1 pt-3 lg:flex-wrap">
         {weeks.map((m) => (
           <Link
             key={m}
             href={`/woche?month=${mk}&week=${m}`}
-            className={`shrink-0 border px-[11px] py-2 text-xs ${
+            className={`shrink-0 rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors ${
               m === monday
                 ? "border-naranja bg-naranja text-white"
                 : "border-line text-muted"
